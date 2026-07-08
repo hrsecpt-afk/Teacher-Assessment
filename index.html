@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -5070,253 +5070,98 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             const template = EVAL_TEMPLATES[selectedTeacher.role];
             if (!template) return;
 
-            // Extract Leave Stats
-            const leaveSickTimes = document.getElementById('leave-sick-times').value;
-            const leaveSickDays = document.getElementById('leave-sick-days').value;
-            const leavePersonalTimes = document.getElementById('leave-personal-times').value;
-            const leavePersonalDays = document.getElementById('leave-personal-days').value;
-            const leaveLateTimes = document.getElementById('leave-late-times').value;
-            const leaveLateDays = document.getElementById('leave-late-days').value;
-            const leaveOtherTimes = document.getElementById('leave-other-times').value;
-            const leaveOtherDays = document.getElementById('leave-other-days').value;
-
-            // Total leaves
-            const totalLeaveTimes = parseInt(leaveSickTimes) + parseInt(leavePersonalTimes) + parseInt(leaveLateTimes) + parseInt(leaveOtherTimes);
-            const totalLeaveDays = parseInt(leaveSickDays) + parseInt(leavePersonalDays) + parseInt(leaveLateDays) + parseInt(leaveOtherDays);
-
-            // Fetch Score Stats
-            let totalRawScore = 0;
-            let maxRawPossible = 0;
-            template.parts.forEach(part => {
-                part.items.forEach((item, index) => {
-                    const scoreKey = `${part.id}_${index}`;
-                    totalRawScore += (wizardScores[scoreKey] || 0);
-                    maxRawPossible += item.max;
-                });
-            });
-
-            let finalPercent = 0;
-            let overallConvertedScore = 0;
-            let detailsHtml = '';
-
-            if (template.type === 'rubric_1_4') {
-                const part1Score = template.parts[0].calculate(wizardScores);
-                const part2RawScore = template.parts[1].calculate(wizardScores);
-                const part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part2RawScore) : part2RawScore;
-                overallConvertedScore = part1Score + part2Score;
-                finalPercent = overallConvertedScore;
-
-                detailsHtml = `
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>องค์ประกอบการประเมิน</th>
-                                <th style="text-align: center; width: 20%;">คะแนนเต็ม</th>
-                                <th style="text-align: center; width: 20%;">คะแนนที่ได้</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>องค์ประกอบที่ 1: การประเมินประสิทธิภาพและประสิทธิผลมาตรฐานตำแหน่ง</td>
-                                <td style="text-align: center;">80.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part1Score.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน</td>
-                                <td style="text-align: center;">20.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part2Score.toFixed(2)}</td>
-                            </tr>
-                            <tr style="background-color: #f1f5f9; font-weight: 700;">
-                                <td>คะแนนรวมทั้งหมด</td>
-                                <td style="text-align: center;">100.00</td>
-                                <td style="text-align: center; color: #2563eb;">${overallConvertedScore.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-            } else if (template.type === 'pa_rubric') {
-                const part1_1Score = template.parts[0].calculate(wizardScores);
-                const part1_2RawScore = template.parts[1].calculate(wizardScores);
-                const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100;
-                finalPercent = overallConvertedScore;
-
-                detailsHtml = `
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>องค์ประกอบการประเมิน</th>
-                                <th style="text-align: center; width: 20%;">คะแนนเต็ม</th>
-                                <th style="text-align: center; width: 20%;">คะแนนที่ได้</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>องค์ประกอบที่ 1 ตอนที่ 1: การปฏิบัติงานตามมาตรฐานตำแหน่ง</td>
-                                <td style="text-align: center;">60.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part1_1Score.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน</td>
-                                <td style="text-align: center;">20.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part1_2Score.toFixed(2)}</td>
-                            </tr>
-                            <tr style="background-color: #f1f5f9; font-weight: 700;">
-                                <td>คะแนนรวมทั้งหมด</td>
-                                <td style="text-align: center;">100.00</td>
-                                <td style="text-align: center; color: #2563eb;">${overallConvertedScore.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-            } else if (template.type === 'gov_staff_rubric') {
-                const part1Score = template.parts[0].calculate(wizardScores);
-                const part2Score = template.parts[1].calculate(wizardScores);
-                overallConvertedScore = (part1Score * 0.8) + (part2Score * 0.2);
-                finalPercent = overallConvertedScore;
-
-                let sum1 = 0; for (let i = 0; i < 9; i++) sum1 += wizardScores[`part2_${i}`] || 0;
-                const score1 = (sum1 * 20) / 45;
-                let sum2 = 0; for (let i = 9; i < 15; i++) sum2 += wizardScores[`part2_${i}`] || 0;
-                const score2 = (sum2 * 10) / 30;
-                let sum3 = 0; for (let i = 15; i < 20; i++) sum3 += wizardScores[`part2_${i}`] || 0;
-                const score3 = (sum3 * 20) / 25;
-                let sum4 = 0; for (let i = 20; i < 24; i++) sum4 += wizardScores[`part2_${i}`] || 0;
-                const score4 = (sum4 * 20) / 20;
-                let sum5 = 0; for (let i = 24; i < 30; i++) sum5 += wizardScores[`part2_${i}`] || 0;
-                const score5 = (sum5 * 10) / 30;
-                let sum6 = 0; for (let i = 30; i < 34; i++) sum6 += wizardScores[`part2_${i}`] || 0;
-                const score6 = (sum6 * 10) / 20;
-                let sum7 = 0; for (let i = 34; i < 37; i++) sum7 += wizardScores[`part2_${i}`] || 0;
-                const score7 = (sum7 * 10) / 15;
-
-                detailsHtml = `
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>องค์ประกอบการประเมิน</th>
-                                <th style="text-align: center; width: 20%;">คะแนนเต็ม</th>
-                                <th style="text-align: center; width: 20%;">คะแนนที่ได้</th>
-                                <th style="text-align: center; width: 20%;">คะแนนถ่วงน้ำหนัก</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>องค์ประกอบที่ 1: ผลสัมฤทธิ์ของงาน (น้ำหนัก 80%)</td>
-                                <td style="text-align: center;">100.00</td>
-                                <td style="text-align: center;">${part1Score.toFixed(2)}</td>
-                                <td style="text-align: center; font-weight: bold;">${(part1Score * 0.8).toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="4" style="background-color: #fafafa; font-weight: 600; padding-left: 20px;">
-                                    รายละเอียดองค์ประกอบที่ 2: พฤติกรรมการปฏิบัติงาน (สมรรถนะ น้ำหนัก 20%)
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การมุ่งผลสัมฤทธิ์ (น้ำหนัก 20 คะแนน)</td>
-                                <td style="text-align: center;">20.00</td>
-                                <td style="text-align: center;">${score1.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การบริการที่ดี (น้ำหนัก 10 คะแนน)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center;">${score2.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การสั่งสมความเชี่ยวชาญในงานอาชีพ (น้ำหนัก 20 คะแนน)</td>
-                                <td style="text-align: center;">20.00</td>
-                                <td style="text-align: center;">${score3.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การยึดมั่นในความถูกต้องชอบธรรม และจริยธรรม (น้ำหนัก 20 คะแนน)</td>
-                                <td style="text-align: center;">20.00</td>
-                                <td style="text-align: center;">${score4.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การทำงานเป็นทีม (น้ำหนัก 10 คะแนน)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center;">${score5.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การคิดวิเคราะห์การจัดการเรียนรู้ (น้ำหนัก 10 คะแนน)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center;">${score6.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 30px;">- การมองภาพองค์รวมในการจัดดูแลช่วยเหลือฯ (น้ำหนัก 10 คะแนน)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center;">${score7.toFixed(2)}</td>
-                                <td style="text-align: center;">-</td>
-                            </tr>
-                            <tr style="background-color: #fafafa;">
-                                <td>รวมคะแนนสมรรถนะ (100 คะแนน)</td>
-                                <td style="text-align: center;">100.00</td>
-                                <td style="text-align: center;">${part2Score.toFixed(2)}</td>
-                                <td style="text-align: center; font-weight: bold;">${(part2Score * 0.2).toFixed(2)}</td>
-                            </tr>
-                            <tr style="background-color: #f1f5f9; font-weight: 700;">
-                                <td>คะแนนรวมทั้งหมด</td>
-                                <td style="text-align: center;">100.00</td>
-                                <td style="text-align: center;">-</td>
-                                <td style="text-align: center; color: #2563eb;">${overallConvertedScore.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-            } else {
-                finalPercent = maxRawPossible > 0 ? (totalRawScore / maxRawPossible) * 100 : 0;
-                overallConvertedScore = totalRawScore;
-
-                detailsHtml = `
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>หัวข้อประเมิน</th>
-                                <th style="text-align: center; width: 25%;">คะแนนรวมดิบที่ได้</th>
-                                <th style="text-align: center; width: 25%;">คะแนนรวมเต็ม</th>
-                                <th style="text-align: center; width: 25%;">คิดเป็นร้อยละ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>ผลปฏิบัติงานรวมตามมาตรฐานแบบประเมินตำแหน่ง</td>
-                                <td style="text-align: center; font-weight: bold;">${totalRawScore}</td>
-                                <td style="text-align: center;">${maxRawPossible}</td>
-                                <td style="text-align: center; font-weight: bold; color: var(--accent-blue);">${finalPercent.toFixed(2)}%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-            }
-
-            // Calculate Grade
-            const gradeResult = getGradeForRole(selectedTeacher.role, finalPercent);
-            const grade = gradeResult.grade;
-
             // Evaluator & round info
             const evalYear = document.getElementById('eval-year').value;
             const evalRound = document.getElementById('eval-round').value;
-            const evaluatorName = document.getElementById('evaluator-name').value || '(ยังไม่ได้ระบุ)';
-            const evaluatorPos = document.getElementById('evaluator-position').value || '(ยังไม่ได้ระบุ)';
-            
-            const renewalDecision = document.querySelector('input[name="contract-renewal"]:checked')?.value || 'เห็นสมควรต่อสัญญาจ้าง';
-            const commentsText = document.getElementById('eval-comments').value.trim() || '(ไม่มีความเห็นเพิ่มเติม)';
-            const improvementText = document.getElementById('eval-improvement').value.trim() || '(ไม่มีระบุประเด็นปรับปรุง)';
 
-            const committee = [
-                { name: 'นางสาวภัทรภร หมื่นมะเริง', pos: 'ผู้อำนวยการศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี' },
-                { name: 'นายชัยธวัช สาทถาพร', pos: 'รองผู้อำนวยการศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี' },
-                { name: 'นางสาวเกษราภรณ์ กลิ่นชื่น', pos: 'หัวหน้ากลุ่มบริหารงานวิชาการ' },
-                { name: 'นางสิราภัทณ์ สมนาแซง', pos: 'หัวหน้ากลุ่มบริหารงานทั่วไป' },
-                { name: 'นายโกสินทร์ ยังมี', pos: 'หัวหน้ากลุ่มบริหารงานบุคคล' },
-                { name: 'นางสาวนุชนาท ทาเอื้อ', pos: 'หัวหน้ากลุ่มบริหารงานแผนงานและงบประมาณ' }
-            ];
+            // Compute scores
+            let finalPercent = 0;
+            let overallConvertedScore = 0;
+            let part1Score = 0, part2Score = 0;
+
+            if (template.type === 'rubric_1_4') {
+                part1Score = template.parts[0].calculate(wizardScores);
+                const part2RawScore = template.parts[1].calculate(wizardScores);
+                part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part2RawScore) : part2RawScore;
+                overallConvertedScore = part1Score + part2Score;
+                finalPercent = overallConvertedScore;
+            } else if (template.type === 'pa_rubric') {
+                part1Score = template.parts[0].calculate(wizardScores);
+                const part1_2RawScore = template.parts[1].calculate(wizardScores);
+                part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
+                overallConvertedScore = ((part1Score + part2Score) / 80) * 100;
+                finalPercent = overallConvertedScore;
+            } else {
+                let totalRawScore = 0, maxRawPossible = 0;
+                template.parts.forEach(part => {
+                    part.items.forEach((item, index) => {
+                        totalRawScore += (wizardScores[`${part.id}_${index}`] || 0);
+                        maxRawPossible += item.max;
+                    });
+                });
+                finalPercent = maxRawPossible > 0 ? (totalRawScore / maxRawPossible) * 100 : 0;
+                overallConvertedScore = finalPercent;
+                part1Score = totalRawScore;
+                part2Score = 0;
+            }
+
+            const gradeResult = getGradeForRole(selectedTeacher.role, finalPercent);
+            const passed = finalPercent >= 70;
+
+            // Determine part1/part2 max display values for PA form
+            const isPaType = (template.type === 'rubric_1_4' || template.type === 'pa_rubric');
+            const part1Max = template.type === 'rubric_1_4' ? 80 : 60;
+            const part2Max = template.type === 'rubric_1_4' ? 20 : 20;
+            // Scale for display: pa_rubric total is out of 80, show as percentage of 100
+            const part1Display = template.type === 'pa_rubric' ? ((part1Score / 60) * 60).toFixed(1) : part1Score.toFixed(1);
+            const part2Display = part2Score.toFixed(1);
+            const totalDisplay = overallConvertedScore.toFixed(1);
+
+            // Salary display
+            const salaryFormatted = selectedTeacher.salary ? Number(selectedTeacher.salary).toLocaleString('th-TH') : '-';
+
+            // PA form table rows
+            const paTableRows = isPaType ? `
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;">
+                        ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง
+                    </td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">${part1Max}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px; font-weight: 600;">${part1Display}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 11px; color: #555;">
+                        เกณฑ์ผ่านต้องได้คะแนนจากกรรมการแต่ละคนไม่ต่ำกว่าร้อยละ 70%
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;">
+                        ส่วนที่ 2 ข้อตกลงในการพัฒนางาน ที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน
+                    </td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">${part2Max}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px; font-weight: 600;">${part2Display}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;"></td>
+                </tr>
+                <tr style="font-weight: 700; background-color: #f5f5f5;">
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">รวม</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">${part1Max + part2Max}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">${totalDisplay}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;"></td>
+                </tr>
+            ` : `
+                <tr>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;">ผลการปฏิบัติงาน</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;">100</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px; font-weight: 600;">${totalDisplay}</td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; text-align: center; font-size: 13px;"></td>
+                    <td style="padding: 6px 8px; border: 1px solid #333; font-size: 13px;"></td>
+                </tr>
+            `;
 
             printContainer.innerHTML = `
                 <div class="report-print-actions">
@@ -5325,98 +5170,112 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         พิมพ์เอกสาร (Print Report)
                     </button>
                 </div>
-                
-                <div class="print-official-header">
-                    <h2>รายงานสรุปผลการประเมินการปฏิบัติงาน</h2>
-                    <h3>ศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี</h3>
-                    <p>ปีการศึกษา ${escapeHTML(evalYear)} | ${escapeHTML(evalRound)}</p>
-                </div>
 
-                <div class="report-meta-grid">
-                    <div><strong>ชื่อผู้รับการประเมิน:</strong> ${escapeHTML(selectedTeacher.name)}</div>
-                    <div><strong>ตำแหน่ง / วิทยฐานะ:</strong> ${escapeHTML(selectedTeacher.role)}</div>
-                    <div><strong>รหัสบุคลากร:</strong> ${escapeHTML(selectedTeacher.id)}</div>
-                    <div><strong>กลุ่มสาระฯ / สังกัด:</strong> ${escapeHTML(selectedTeacher.department)}</div>
-                </div>
+                <div class="print-summary-sheet" style="font-family: 'Sarabun', 'TH Sarabun New', sans-serif; color: #000; background: #fff; padding: 32px 36px; max-width: 800px; margin: 0 auto;">
 
-                <div class="report-divider"></div>
-
-                <h4 class="report-section-title">1. สรุปคะแนนการประเมิน</h4>
-                ${detailsHtml}
-                
-                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #cbd5e1;">
-                    <span><strong>ระดับเกรดผลลัพธ์การประเมิน:</strong></span>
-                    <span style="font-size: 16px; font-weight: bold; color: #2563eb;">${grade}</span>
-                </div>
-
-                <h4 class="report-section-title" style="margin-top: 24px;">2. สถิติการปฏิบัติราชการ (การลาและการมาสาย)</h4>
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align: center;">ประเภทการลา</th>
-                            <th style="text-align: center; width: 25%;">จำนวนครั้ง</th>
-                            <th style="text-align: center; width: 25%;">จำนวนวัน</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ลาป่วย</td>
-                            <td style="text-align: center;">${leaveSickTimes}</td>
-                            <td style="text-align: center;">${leaveSickDays}</td>
-                        </tr>
-                        <tr>
-                            <td>ลากิจส่วนตัว</td>
-                            <td style="text-align: center;">${leavePersonalTimes}</td>
-                            <td style="text-align: center;">${leavePersonalDays}</td>
-                        </tr>
-                        <tr>
-                            <td>มาสาย</td>
-                            <td style="text-align: center;">${leaveLateTimes}</td>
-                            <td style="text-align: center;">${leaveLateDays}</td>
-                        </tr>
-                        <tr>
-                            <td>ลาอื่นๆ</td>
-                            <td style="text-align: center;">${leaveOtherTimes}</td>
-                            <td style="text-align: center;">${leaveOtherDays}</td>
-                        </tr>
-                        <tr style="font-weight: 700; background-color: #f1f5f9;">
-                            <td>รวมผลลัพธ์การลาทั้งหมด</td>
-                            <td style="text-align: center;">${totalLeaveTimes}</td>
-                            <td style="text-align: center;">${totalLeaveDays}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h4 class="report-section-title" style="margin-top: 24px;">3. ความคิดเห็นและข้อเสนอแนะของผู้ประเมิน</h4>
-                <div style="padding: 16px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #cbd5e1; line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
-                    <div><strong>ความคิดเห็นเพิ่มเติม:</strong><br><span style="color: #475569;">${escapeHTML(commentsText)}</span></div>
-                    <div style="margin-top: 8px;"><strong>ประเด็นที่ควรปรับปรุง:</strong><br><span style="color: #475569;">${escapeHTML(improvementText)}</span></div>
-                    <div style="margin-top: 8px;"><strong>มติเห็นชอบต่อสัญญาจ้าง / จ้างงาน:</strong><br><span style="color: #2563eb; font-weight: bold;">${escapeHTML(renewalDecision)}</span></div>
-                </div>
-
-                <div class="report-signatures-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 40px; page-break-inside: avoid;">
-                    <div class="sig-block" style="text-align: center;">
-                        <div class="sig-line" style="border-bottom: 1px dotted #475569; width: 220px; margin: 0 auto 8px auto; height: 40px;"></div>
-                        <div>( ${escapeHTML(selectedTeacher.name)} )</div>
-                        <div class="sig-subtitle" style="font-size: 12px; color: #475569; margin-top: 4px;">ผู้รับการประเมิน</div>
-                        <div style="margin-top: 4px; font-size: 11px; color: #64748b;">วันที่ ....... / ....... / .......</div>
-                    </div>
-                    
-                    <div class="sig-block" style="text-align: center;">
-                        <div class="sig-line" style="border-bottom: 1px dotted #475569; width: 220px; margin: 0 auto 8px auto; height: 40px;"></div>
-                        <div>( ${escapeHTML(evaluatorName)} )</div>
-                        <div class="sig-subtitle" style="font-size: 12px; color: #475569; margin-top: 4px;">${escapeHTML(evaluatorPos)}</div>
-                        <div style="margin-top: 4px; font-size: 11px; color: #64748b;">วันที่ ....... / ....... / .......</div>
+                    <!-- Header -->
+                    <div style="text-align: center; margin-bottom: 8px;">
+                        <div style="font-size: 16px; font-weight: 700; line-height: 1.5;">แบบสรุปผลการประเมินการพัฒนางานตามข้อตกลง (PA)</div>
+                        <div style="font-size: 14px; font-weight: 600; line-height: 1.5;">สำหรับข้าราชการครูและบุคลากรทางการศึกษา ตำแหน่ง ครู</div>
+                        <div style="font-size: 14px; line-height: 1.5;">สังกัดบริหารงานการศึกษาพิเศษ</div>
+                        <div style="font-size: 14px; line-height: 1.5;">ประจำปีงบประมาณ พ.ศ. ${escapeHTML(evalYear)}</div>
                     </div>
 
-                    ${committee.map(c => `
-                        <div class="sig-block" style="text-align: center; margin-top: 16px;">
-                            <div class="sig-line" style="border-bottom: 1px dotted #475569; width: 220px; margin: 0 auto 8px auto; height: 40px;"></div>
-                            <div>( ${escapeHTML(c.name)} )</div>
-                            <div class="sig-subtitle" style="font-size: 12px; color: #475569; margin-top: 4px;">${escapeHTML(c.pos)}</div>
-                            <div style="margin-top: 4px; font-size: 11px; color: #64748b;">วันที่ ....... / ....... / .......</div>
+                    <div style="border-top: 2px solid #000; margin: 8px 0;"></div>
+
+                    <div style="font-size: 13px; margin-bottom: 8px; text-align: center;">
+                        รอบการประเมิน ระหว่างวันที่ 1 เดือนตุลาคม พ.ศ. ${escapeHTML(evalYear) ? String(parseInt(evalYear) - 1) : '....'}
+                        ถึงวันที่ 30 เดือนกันยายน พ.ศ. ${escapeHTML(evalYear)}
+                    </div>
+
+                    <div style="border-top: 1px solid #000; margin: 8px 0;"></div>
+
+                    <!-- Teacher Info -->
+                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">ข้อมูลผู้รับการประเมิน</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px;">
+                        <tr>
+                            <td style="padding: 3px 0; width: 15%;">ชื่อ</td>
+                            <td style="padding: 3px 0; border-bottom: 1px dotted #555; width: 30%;">${escapeHTML(selectedTeacher.name)}</td>
+                            <td style="padding: 3px 0 3px 16px; width: 10%;">ตำแหน่ง</td>
+                            <td style="padding: 3px 0; border-bottom: 1px dotted #555; width: 45%;">${escapeHTML(selectedTeacher.role)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0;">รหัสบุคลากร</td>
+                            <td style="padding: 3px 0; border-bottom: 1px dotted #555;">${escapeHTML(selectedTeacher.id)}</td>
+                            <td style="padding: 3px 0 3px 16px;">กลุ่มสาระฯ / สังกัด</td>
+                            <td style="padding: 3px 0; border-bottom: 1px dotted #555;">${escapeHTML(selectedTeacher.department || '-')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0;">สถานศึกษา</td>
+                            <td colspan="3" style="padding: 3px 0; border-bottom: 1px dotted #555;">ศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี สังกัดสำนักบริหารงานการศึกษาพิเศษ</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0;">อัตราเงินเดือน</td>
+                            <td colspan="3" style="padding: 3px 0; border-bottom: 1px dotted #555;">${salaryFormatted} บาท</td>
+                        </tr>
+                    </table>
+
+                    <!-- ภาระงาน -->
+                    <div style="font-size: 13px; margin-bottom: 12px;">
+                        <strong>ภาระงาน</strong>&nbsp;&nbsp;
+                        <span style="margin-right: 24px;">☑ เป็นไปตามมาตร ก.ค.ศ. กำหนด</span>
+                        <span>☐ ไม่เป็นไปตามมาตร ก.ค.ศ. กำหนด</span>
+                    </div>
+
+                    <!-- Score Table -->
+                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 6px;">ผลการประเมิน</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px;">
+                        <thead>
+                            <tr style="background-color: #f0f0f0;">
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 35%;">การประเมินข้อตกลงในการพัฒนางาน</th>
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 8%;">คะแนนเต็ม</th>
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 10%;">คนที่ 1</th>
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 10%;">คนที่ 2</th>
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 10%;">คนที่ 3</th>
+                                <th style="padding: 6px 8px; border: 1px solid #333; text-align: center; width: 27%;">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${paTableRows}
+                        </tbody>
+                    </table>
+
+                    <!-- สรุปผล -->
+                    <div style="font-size: 13px; margin-bottom: 20px;">
+                        <strong>สรุปผลการประเมิน 2 ส่วน จากกรรมการ 3 คน</strong>&nbsp;&nbsp;
+                        <span style="margin-right: 24px;">${passed ? '☑' : '☐'} ผ่านเกณฑ์</span>
+                        <span>${!passed ? '☑' : '☐'} ไม่ผ่านเกณฑ์</span>
+                    </div>
+
+                    <div style="border-top: 1px solid #999; margin: 20px 0;"></div>
+
+                    <!-- Signature Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px 32px; margin-top: 16px;">
+                        <!-- Chairman -->
+                        <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 8px;">
+                            <div style="font-size: 13px; margin-bottom: 36px;">(ลงชื่อ) ................................................................ ประธานกรรมการผู้ประเมิน</div>
+                            <div style="font-size: 13px;">(นางสาวภัทรภร หมื่นมะเริง)</div>
+                            <div style="font-size: 12px; color: #333;">ผู้อำนวยการศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี</div>
+                            <div style="font-size: 12px; margin-top: 4px;">วันที่ ....... เดือน ........................ พ.ศ. .........</div>
                         </div>
-                    `).join('')}
+
+                        <!-- Committee 1 -->
+                        <div style="text-align: center;">
+                            <div style="font-size: 13px; margin-bottom: 36px;">(ลงชื่อ) ............................................ กรรมการผู้ประเมิน</div>
+                            <div style="font-size: 13px;">(...............................................)</div>
+                            <div style="font-size: 12px; color: #333;">&nbsp;</div>
+                            <div style="font-size: 12px; margin-top: 4px;">วันที่ ....... เดือน ........................ พ.ศ. .........</div>
+                        </div>
+
+                        <!-- Committee 2 -->
+                        <div style="text-align: center;">
+                            <div style="font-size: 13px; margin-bottom: 36px;">(ลงชื่อ) ............................................ กรรมการผู้ประเมิน</div>
+                            <div style="font-size: 13px;">(...............................................)</div>
+                            <div style="font-size: 12px; color: #333;">&nbsp;</div>
+                            <div style="font-size: 12px; margin-top: 4px;">วันที่ ....... เดือน ........................ พ.ศ. .........</div>
+                        </div>
+                    </div>
+
                 </div>
             `;
         }
