@@ -3977,42 +3977,6 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                             }
                             return (sum * 80) / 56;
                         }
-                    },
-                    {
-                        id: 'part2',
-                        title: 'องค์ประกอบที่ 2: การประเมินการมีส่วนร่วมในการพัฒนาการศึกษา',
-                        maxScore: 10,
-                        items: [
-                            { text: 'ความสำเร็จของงานที่ได้รับมอบหมายจากผู้บังคับบัญชา', max: 5 }
-                        ],
-                        calculate: (scores) => {
-                            const val = scores['part2_0'] || 0;
-                            return val * 2; // scale 1-5 to 2-10
-                        }
-                    },
-                    {
-                        id: 'part3',
-                        title: 'องค์ประกอบที่ 3: การปฏิบัติตนในการรักษาวินัย คุณธรรม จริยธรรม และจรรยาบรรณวิชาชีพ',
-                        maxScore: 10,
-                        items: [
-                            { text: '1. ยึดมั่นในสถาบันหลักของประเทศ (ชาติ ศาสนา พระมหากษัตริย์ และประชาธิปไตย)', max: 4 },
-                            { text: '2. มีความซื่อสัตย์ สุจริต มีจิตสำนึกที่ดี รับผิดชอบต่อหน้าที่', max: 4 },
-                            { text: '3. มีความกล้าคิด กล้าตัดสินใจ กล้าแสดงออก และกระทำในสิ่งที่ถูกต้อง', max: 4 },
-                            { text: '4. มีจิตอาสา จิตสาธารณะ มุ่งประโยชน์ส่วนรวม โดยไม่คำนึงถึงประโยชน์ส่วนตน', max: 4 },
-                            { text: '5. มุ่งผลสัมฤทธิ์ของงาน ปฏิบัติงานเต็มความสามารถ คำนึงถึงคุณภาพการศึกษา', max: 4 },
-                            { text: '6. ปฏิบัติหน้าที่อย่างเป็นธรรมและไม่เลือกปฏิบัติ', max: 4 },
-                            { text: '7. ดำรงตนเป็นแบบอย่างที่ดีและรักษาภาพลักษณ์ของข้าราชการครู', max: 4 },
-                            { text: '8. เคารพศักดิ์ศรีความเป็นมนุษย์ คำนึงถึงสิทธิเด็ก ยอมรับความแตกต่าง', max: 4 },
-                            { text: '9. ยึดถือและปฏิบัติตามจรรยาบรรณของวิชาชีพ', max: 4 },
-                            { text: '10. มีวินัยและการรักษาวินัย', max: 4 }
-                        ],
-                        calculate: (scores) => {
-                            let sum = 0;
-                            for (let i = 0; i < 10; i++) {
-                                sum += scores[`part3_${i}`] || 0;
-                            }
-                            return sum / 4; // max score is 10 (40/4)
-                        }
                     }
                 ]
             },
@@ -4072,42 +4036,6 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         scaleToTotal: (score) => {
                             return (score * 20) / 40; // Scale 40 to 20 points
                         }
-                    },
-                    {
-                        id: 'part2',
-                        title: 'องค์ประกอบที่ 2: การมีส่วนร่วมในการพัฒนาการศึกษา',
-                        maxScore: 10,
-                        items: [
-                            { text: 'ความสำเร็จของงานที่ได้รับมอบหมายจากผู้บังคับบัญชา', max: 5 }
-                        ],
-                        calculate: (scores) => {
-                            const val = scores['part2_0'] || 0;
-                            return val * 2;
-                        }
-                    },
-                    {
-                        id: 'part3',
-                        title: 'องค์ประกอบที่ 3: การปฏิบัติตนในการรักษาวินัย คุณธรรม จริยธรรม และจรรยาบรรณวิชาชีพ',
-                        maxScore: 10,
-                        items: [
-                            { text: '1. ยึดมั่นในสถาบันหลักของประเทศ (ชาติ ศาสนา พระมหากษัตริย์ และประชาธิปไตย)', max: 4 },
-                            { text: '2. มีความซื่อสัตย์ สุจริต มีจิตสำนึกที่ดี รับผิดชอบต่อหน้าที่', max: 4 },
-                            { text: '3. มีความกล้าคิด กล้าตัดสินใจ กล้าแสดงออก และกระทำในสิ่งที่ถูกต้อง', max: 4 },
-                            { text: '4. มีจิตอาสา จิตสาธารณะ มุ่งประโยชน์ส่วนรวม โดยไม่คำนึงถึงประโยชน์ส่วนตน', max: 4 },
-                            { text: '5. มุ่งผลสัมฤทธิ์ของงาน ปฏิบัติงานเต็มความสามารถ คำนึงถึงคุณภาพการศึกษา', max: 4 },
-                            { text: '6. ปฏิบัติหน้าที่อย่างเป็นธรรมและไม่เลือกปฏิบัติ', max: 4 },
-                            { text: '7. ดำรงตนเป็นแบบอย่างที่ดีและรักษาภาพลักษณ์ของข้าราชการครู', max: 4 },
-                            { text: '8. เคารพศักดิ์ศรีความเป็นมนุษย์ คำนึงถึงสิทธิเด็ก ยอมรับความแตกต่าง', max: 4 },
-                            { text: '9. ยึดถือและปฏิบัติตามจรรยาบรรณของวิชาชีพ', max: 4 },
-                            { text: '10. มีวินัยและการรักษาวินัย', max: 4 }
-                        ],
-                        calculate: (scores) => {
-                            let sum = 0;
-                            for (let i = 0; i < 10; i++) {
-                                sum += scores[`part3_${i}`] || 0;
-                            }
-                            return sum / 4;
-                        }
                     }
                 ]
             },
@@ -4166,42 +4094,6 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         },
                         scaleToTotal: (score) => {
                             return (score * 20) / 40;
-                        }
-                    },
-                    {
-                        id: 'part2',
-                        title: 'องค์ประกอบที่ 2: การมีส่วนร่วมในการพัฒนาการศึกษา',
-                        maxScore: 10,
-                        items: [
-                            { text: 'ความสำเร็จของงานที่ได้รับมอบหมายจากผู้บังคับบัญชา', max: 5 }
-                        ],
-                        calculate: (scores) => {
-                            const val = scores['part2_0'] || 0;
-                            return val * 2;
-                        }
-                    },
-                    {
-                        id: 'part3',
-                        title: 'องค์ประกอบที่ 3: การปฏิบัติตนในการรักษาวินัย คุณธรรม จริยธรรม และจรรยาบรรณวิชาชีพ',
-                        maxScore: 10,
-                        items: [
-                            { text: '1. ยึดมั่นในสถาบันหลักของประเทศ (ชาติ ศาสนา พระมหากษัตริย์ และประชาธิปไตย)', max: 4 },
-                            { text: '2. มีความซื่อสัตย์ สุจริต มีจิตสำนึกที่ดี รับผิดชอบต่อหน้าที่', max: 4 },
-                            { text: '3. มีความกล้าคิด กล้าตัดสินใจ กล้าแสดงออก และกระทำในสิ่งที่ถูกต้อง', max: 4 },
-                            { text: '4. มีจิตอาสา จิตสาธารณะ มุ่งประโยชน์ส่วนรวม โดยไม่คำนึงถึงประโยชน์ส่วนตน', max: 4 },
-                            { text: '5. มุ่งผลสัมฤทธิ์ของงาน ปฏิบัติงานเต็มความสามารถ คำนึงถึงคุณภาพการศึกษา', max: 4 },
-                            { text: '6. ปฏิบัติหน้าที่อย่างเป็นธรรมและไม่เลือกปฏิบัติ', max: 4 },
-                            { text: '7. ดำรงตนเป็นแบบอย่างที่ดีและรักษาภาพลักษณ์ของข้าราชการครู', max: 4 },
-                            { text: '8. เคารพศักดิ์ศรีความเป็นมนุษย์ คำนึงถึงสิทธิเด็ก ยอมรับความแตกต่าง', max: 4 },
-                            { text: '9. ยึดถือและปฏิบัติตามจรรยาบรรณของวิชาชีพ', max: 4 },
-                            { text: '10. มีวินัยและการรักษาวินัย', max: 4 }
-                        ],
-                        calculate: (scores) => {
-                            let sum = 0;
-                            for (let i = 0; i < 10; i++) {
-                                sum += scores[`part3_${i}`] || 0;
-                            }
-                            return sum / 4;
                         }
                     }
                 ]
@@ -4952,18 +4844,14 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             if (template.type === 'rubric_1_4') {
                 // Assistant Teacher
                 const part1Score = template.parts[0].calculate(wizardScores);
-                const part2Score = template.parts[1].calculate(wizardScores);
-                const part3Score = template.parts[2].calculate(wizardScores);
-                overallConvertedScore = part1Score + part2Score + part3Score;
+                overallConvertedScore = (part1Score / 80) * 100; // Scaled to 100% since Element 2 & 3 are removed
                 finalPercent = overallConvertedScore; // Base is already 100 points
             } else if (template.type === 'pa_rubric') {
                 // PA Teacher (No rank / Expert rank)
                 const part1_1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                const part2Score = template.parts[2].calculate(wizardScores);
-                const part3Score = template.parts[3].calculate(wizardScores);
-                overallConvertedScore = part1_1Score + part1_2Score + part2Score + part3Score;
+                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100; // Scaled to 100% since Element 2 & 3 are removed
                 finalPercent = overallConvertedScore; // Base is 100
             } else if (template.type === 'gov_staff_rubric') {
                 // Government Employee (Achievement 80% + Competency 20%)
@@ -5173,9 +5061,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
 
             if (template.type === 'rubric_1_4') {
                 const part1Score = template.parts[0].calculate(wizardScores);
-                const part2Score = template.parts[1].calculate(wizardScores);
-                const part3Score = template.parts[2].calculate(wizardScores);
-                overallConvertedScore = part1Score + part2Score + part3Score;
+                overallConvertedScore = (part1Score / 80) * 100;
                 finalPercent = overallConvertedScore;
 
                 detailsHtml = `
@@ -5193,16 +5079,6 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                                 <td style="text-align: center;">80.00</td>
                                 <td style="text-align: center; font-weight: bold;">${part1Score.toFixed(2)}</td>
                             </tr>
-                            <tr>
-                                <td>องค์ประกอบที่ 2: การประเมินการมีส่วนร่วมในการพัฒนาการศึกษา</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part2Score.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>องค์ประกอบที่ 3: การประเมินการปฏิบัติตน (วินัย คุณธรรม จริยธรรม)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part3Score.toFixed(2)}</td>
-                            </tr>
                             <tr style="background-color: var(--bg-main); font-weight: 700;">
                                 <td>คะแนนรวมทั้งหมด</td>
                                 <td style="text-align: center;">100.00</td>
@@ -5215,9 +5091,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 const part1_1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                const part2Score = template.parts[2].calculate(wizardScores);
-                const part3Score = template.parts[3].calculate(wizardScores);
-                overallConvertedScore = part1_1Score + part1_2Score + part2Score + part3Score;
+                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100;
                 finalPercent = overallConvertedScore;
 
                 detailsHtml = `
@@ -5239,16 +5113,6 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                                 <td>องค์ประกอบที่ 1 ตอนที่ 2: งานข้อตกลงประเด็นท้าทาย (PA)</td>
                                 <td style="text-align: center;">20.00</td>
                                 <td style="text-align: center; font-weight: bold;">${part1_2Score.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>องค์ประกอบที่ 2: การมีส่วนร่วมในการพัฒนาการศึกษา</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part2Score.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>องค์ประกอบที่ 3: การปฏิบัติตน (วินัย คุณธรรม จริยธรรม)</td>
-                                <td style="text-align: center;">10.00</td>
-                                <td style="text-align: center; font-weight: bold;">${part3Score.toFixed(2)}</td>
                             </tr>
                             <tr style="background-color: var(--bg-main); font-weight: 700;">
                                 <td>คะแนนรวมทั้งหมด</td>
@@ -5538,17 +5402,13 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
 
             if (template.type === 'rubric_1_4') {
                 const part1Score = template.parts[0].calculate(wizardScores);
-                const part2Score = template.parts[1].calculate(wizardScores);
-                const part3Score = template.parts[2].calculate(wizardScores);
-                overallConvertedScore = part1Score + part2Score + part3Score;
+                overallConvertedScore = (part1Score / 80) * 100;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'pa_rubric') {
                 const part1_1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                const part2Score = template.parts[2].calculate(wizardScores);
-                const part3Score = template.parts[3].calculate(wizardScores);
-                overallConvertedScore = part1_1Score + part1_2Score + part2Score + part3Score;
+                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'gov_staff_rubric') {
                 const part1Score = template.parts[0].calculate(wizardScores);
