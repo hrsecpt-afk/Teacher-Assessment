@@ -3167,8 +3167,43 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
         // Cache for loaded teachers
         let teachersList = [];
 
+        // Lookup map for known staff correct departments
+        const KNOWN_DEPT_MAP = {
+            'นายโกสินทร์ ยังมี':           'หัวหน้าฝ่ายบริหารงานบุคคล',
+            'นายคามิน หล้าก่ำ':             'หัวหน้าฝ่ายบริหารทั่วไป',
+            'นางวรรณเพ็ญ ปิ่นประดับ':       'หัวหน้าฝ่ายบริหารการจัดการศึกษาภายนอก',
+            'นางสาวนุชนาท ทาเอื้อ':         'หัวหน้าฝ่ายบริหารงบประมาณ',
+            'นางสาววรางคณา อาชีวะ':         'หัวหน้าฝ่ายบริหารวิชาการ',
+        };
+
+        async function patchKnownStaffDepartments() {
+            let changed = false;
+            for (const teacher of teachersList) {
+                const correctDept = KNOWN_DEPT_MAP[teacher.name];
+                if (correctDept && teacher.department !== correctDept) {
+                    teacher.department = correctDept;
+                    changed = true;
+                    // Persist change back to storage
+                    try {
+                        if (isOnline()) {
+                            await supabaseClient.from('teachers').update({ department: correctDept }).eq('id', teacher.id);
+                        } else {
+                            const localData = JSON.parse(localStorage.getItem('local_teachers') || '[]');
+                            const idx = localData.findIndex(t => t.id === teacher.id);
+                            if (idx !== -1) { localData[idx].department = correctDept; }
+                            localStorage.setItem('local_teachers', JSON.stringify(localData));
+                        }
+                    } catch (e) {
+                        console.warn('patchKnownStaffDepartments: could not persist for', teacher.name, e);
+                    }
+                }
+            }
+            if (changed) renderTeacherTable();
+        }
+
         async function loadAndRenderTeachers() {
             teachersList = await fetchTeachers();
+            await patchKnownStaffDepartments();
             renderTeacherTable();
         }
 
