@@ -5202,7 +5202,11 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 <div class="report-print-actions">
                     <button class="btn" onclick="window.print()" style="background-color: var(--accent-indigo); border-color: transparent;">
                         <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                        พิมพ์เอกสาร (Print Report)
+                        พิมพ์เอกสาร (Print)
+                    </button>
+                    <button class="btn" onclick="downloadReportAsDoc()" style="background-color: #1d6f42; border-color: transparent;">
+                        <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        ดาวน์โหลด (.doc)
                     </button>
                 </div>
 
@@ -5313,6 +5317,69 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
 
                 </div>
             `;
+        }
+
+        function downloadReportAsDoc() {
+            const sheet = document.querySelector('.print-summary-sheet');
+            if (!sheet || !selectedTeacher) {
+                alert('กรุณาสร้างรายงานก่อนดาวน์โหลด');
+                return;
+            }
+
+            const teacherName = selectedTeacher.name || 'รายงาน';
+            const evalYear = document.getElementById('eval-year')?.value || '';
+            const fileName = `PA_${teacherName}_${evalYear}.doc`;
+
+            // Build a full Word-compatible HTML document
+            const wordHtml = `
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm 2.5cm; }
+  body {
+    font-family: 'TH Sarabun New', 'Sarabun', 'AngsanaNew', sans-serif;
+    font-size: 14pt;
+    color: #000;
+    line-height: 1.5;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #000; padding: 5pt 7pt; font-size: 13pt; }
+  th { background-color: #f0f0f0; font-weight: bold; text-align: center; }
+  .center { text-align: center; }
+  .bold { font-weight: bold; }
+  .sig-area { margin-top: 24pt; }
+  .divider-thick { border-top: 2pt solid #000; margin: 8pt 0; }
+  .divider-thin { border-top: 1pt solid #000; margin: 8pt 0; }
+</style>
+</head>
+<body>
+${sheet.innerHTML}
+</body>
+</html>`;
+
+            const blob = new Blob([wordHtml], { type: 'application/msword;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         async function commitEvaluation() {
