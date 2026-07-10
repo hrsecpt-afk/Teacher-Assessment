@@ -2283,19 +2283,19 @@
                                     <textarea id="eval-improvement" rows="3" placeholder="ระบุประเด็นที่ควรปรับปรุงแก้ไขเพื่อพัฒนาในอนาคต..." class="form-control" style="font-family: var(--font-thai); resize: vertical; background-color: var(--bg-sidebar);"></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน</label>
+                                    <label id="contract-section-title" style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน</label>
                                     <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background-color: rgba(14, 22, 38, 0.3); border-radius: var(--border-radius); border: 1px solid var(--border-color);">
                                         <label class="radio-label">
                                             <input type="radio" name="contract-renewal" value="เห็นสมควรต่อสัญญาจ้าง" checked>
-                                            <span>เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน</span>
+                                            <span id="label-renewal-1">เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน</span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="contract-renewal" value="เห็นควรปรับปรุงก่อนต่อสัญญาจ้าง">
-                                            <span>เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง</span>
+                                            <span id="label-renewal-2">เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง</span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="contract-renewal" value="ไม่ต่อสัญญาจ้าง">
-                                            <span>ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน</span>
+                                            <span id="label-renewal-3">ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน</span>
                                         </label>
                                     </div>
                                 </div>
@@ -4556,6 +4556,16 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 if (txtPos) txtPos.value = session.position || '';
             }
             updateEvalDatesFromRound();
+
+            // Restore default contract labels
+            const titleEl = document.getElementById('contract-section-title');
+            const r1El = document.getElementById('label-renewal-1');
+            const r2El = document.getElementById('label-renewal-2');
+            const r3El = document.getElementById('label-renewal-3');
+            if (titleEl) titleEl.innerText = 'ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน';
+            if (r1El) r1El.innerText = 'เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
+            if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง';
+            if (r3El) r3El.innerText = 'ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน';
         }
 
         async function populateTeacherDropdown() {
@@ -4701,6 +4711,25 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
 
             // Load and display teacher file attachments
             displayTeacherFilesPreview(teacherId);
+
+            // Customize contract renewal text for civil servants vs temporary staff
+            const isGov = (teacher.role === 'ครูผู้ช่วย' || teacher.role === 'ครูยังไม่มีวิทยฐานะ' || teacher.role === 'ครูชำนาญการ');
+            const titleEl = document.getElementById('contract-section-title');
+            const r1El = document.getElementById('label-renewal-1');
+            const r2El = document.getElementById('label-renewal-2');
+            const r3El = document.getElementById('label-renewal-3');
+
+            if (isGov) {
+                if (titleEl) titleEl.innerText = 'ผลการประเมินและการเลื่อนเงินเดือน';
+                if (r1El) r1El.innerText = 'ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
+                if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องการปฏิบัติงาน';
+                if (r3El) r3El.innerText = 'ไม่ผ่านเกณฑ์การประเมิน';
+            } else {
+                if (titleEl) titleEl.innerText = 'ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน';
+                if (r1El) r1El.innerText = 'เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
+                if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง';
+                if (r3El) r3El.innerText = 'ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน';
+            }
         }
 
         async function displayTeacherFilesPreview(teacherId) {
@@ -5638,7 +5667,17 @@ ${sheet.innerHTML}
 
             const comments = document.getElementById('eval-comments').value.trim();
             const improvement = document.getElementById('eval-improvement').value.trim();
-            const renewalDecision = document.querySelector('input[name="contract-renewal"]:checked')?.value || 'เห็นสมควรต่อสัญญาจ้าง';
+            let renewalDecision = document.querySelector('input[name="contract-renewal"]:checked')?.value || 'เห็นสมควรต่อสัญญาจ้าง';
+            const isGov = (selectedTeacher.role === 'ครูผู้ช่วย' || selectedTeacher.role === 'ครูยังไม่มีวิทยฐานะ' || selectedTeacher.role === 'ครูชำนาญการ');
+            if (isGov) {
+                if (renewalDecision === 'เห็นสมควรต่อสัญญาจ้าง') {
+                    renewalDecision = 'ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
+                } else if (renewalDecision === 'เห็นควรปรับปรุงก่อนต่อสัญญาจ้าง') {
+                    renewalDecision = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องการปฏิบัติงาน';
+                } else if (renewalDecision === 'ไม่ต่อสัญญาจ้าง') {
+                    renewalDecision = 'ไม่ผ่านเกณฑ์การประเมิน';
+                }
+            }
 
             const evalData = {
                 id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : 'eval-' + Date.now(),
