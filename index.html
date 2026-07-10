@@ -5352,7 +5352,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             // Scale for display: pa_rubric total is out of 80, show as percentage of 100
             const part1Display = template.type === 'pa_rubric' ? ((part1Score / 60) * 60).toFixed(1) : part1Score.toFixed(1);
             const part2Display = part2Score.toFixed(1);
-            const totalDisplay = overallConvertedScore.toFixed(1);
+            const totalDisplay = isPaType ? (part1Score + part2Score).toFixed(1) : overallConvertedScore.toFixed(1);
 
             // Salary display
             const salaryFormatted = selectedTeacher.salary ? Number(selectedTeacher.salary).toLocaleString('th-TH') : '-';
@@ -5483,6 +5483,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     <!-- สรุปผล -->
                     <div style="font-size: 13px; margin-bottom: 20px;">
                         <strong>สรุปผลการประเมิน 2 ส่วน จากกรรมการ 3 คน</strong>&nbsp;&nbsp;
+                        <span style="margin-right: 24px;">คิดเป็นร้อยละ ${finalPercent.toFixed(2)}%</span>
                         <span style="margin-right: 24px;">${passed ? '☑' : '☐'} ผ่านเกณฑ์</span>
                         <span>${!passed ? '☑' : '☐'} ไม่ผ่านเกณฑ์</span>
                     </div>
