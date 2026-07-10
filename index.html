@@ -2201,11 +2201,11 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="eval-start-date">วันที่เริ่มประเมิน</label>
-                                    <input type="date" id="eval-start-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);">
+                                    <input type="date" id="eval-start-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);" onchange="updateRoundFromEvalDates()">
                                 </div>
                                 <div class="form-group">
                                     <label for="eval-end-date">วันที่สิ้นสุดการประเมิน</label>
-                                    <input type="date" id="eval-end-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);">
+                                    <input type="date" id="eval-end-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);" onchange="updateRoundFromEvalDates()">
                                 </div>
                                 <div class="form-group">
                                     <label for="evaluator-name">ชื่อผู้ประเมิน</label>
@@ -4474,6 +4474,38 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 month: month,
                 year: yearBE
             };
+        }
+
+        function updateRoundFromEvalDates() {
+            const startDateInput = document.getElementById('eval-start-date');
+            const evalRoundSelect = document.getElementById('eval-round');
+            const evalYearInput = document.getElementById('eval-year');
+            if (!startDateInput || !evalRoundSelect) return;
+
+            const dateStr = startDateInput.value;
+            if (!dateStr) return;
+
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return;
+
+            const month = date.getMonth(); // 0-11
+
+            // 0 = Jan, 1 = Feb, 2 = Mar, 9 = Oct, 10 = Nov, 11 = Dec
+            if (month >= 9 || month <= 2) {
+                evalRoundSelect.value = 'ครั้งที่ 1';
+            } else {
+                evalRoundSelect.value = 'ครั้งที่ 2';
+            }
+
+            // Automatically set academic/fiscal year BE
+            const yearAD = date.getFullYear();
+            let yearBE = yearAD + 543;
+            if (month >= 9) {
+                yearBE += 1;
+            }
+            if (evalYearInput) {
+                evalYearInput.value = yearBE.toString();
+            }
         }
 
         function resetWizard() {
