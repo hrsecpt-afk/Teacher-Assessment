@@ -2190,14 +2190,22 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="eval-year">ปีการศึกษา</label>
-                                    <input type="text" id="eval-year" value="2568" placeholder="เช่น 2568" class="form-control" style="font-family: var(--font-eng);">
+                                    <input type="text" id="eval-year" value="2568" placeholder="เช่น 2568" class="form-control" style="font-family: var(--font-eng);" oninput="updateEvalDatesFromRound()">
                                 </div>
                                 <div class="form-group">
                                     <label for="eval-round">ครั้งที่ประเมิน</label>
-                                    <select id="eval-round" class="form-control" style="font-family: var(--font-thai); background-color: var(--bg-sidebar);">
+                                    <select id="eval-round" class="form-control" style="font-family: var(--font-thai); background-color: var(--bg-sidebar);" onchange="updateEvalDatesFromRound()">
                                         <option value="ครั้งที่ 1">ครั้งที่ 1 (1 ตุลาคม - 31 มีนาคม)</option>
                                         <option value="ครั้งที่ 2">ครั้งที่ 2 (1 เมษายน - 30 กันยายน)</option>
                                     </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="eval-start-date">วันที่เริ่มประเมิน</label>
+                                    <input type="date" id="eval-start-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);">
+                                </div>
+                                <div class="form-group">
+                                    <label for="eval-end-date">วันที่สิ้นสุดการประเมิน</label>
+                                    <input type="date" id="eval-end-date" class="form-control" style="font-family: var(--font-eng); background-color: var(--bg-sidebar);">
                                 </div>
                                 <div class="form-group">
                                     <label for="evaluator-name">ชื่อผู้ประเมิน</label>
@@ -3509,7 +3517,9 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     raw_score: evaluation.raw_score,
                     max_score: evaluation.max_score,
                     converted_score: evaluation.converted_score,
-                    improvement: evaluation.improvement
+                    improvement: evaluation.improvement,
+                    start_date: evaluation.start_date,
+                    end_date: evaluation.end_date
                 }
             };
             return {
@@ -3556,7 +3566,9 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 raw_score: meta.raw_score !== undefined ? meta.raw_score : row.raw_score,
                 max_score: meta.max_score !== undefined ? meta.max_score : row.max_score,
                 converted_score: meta.converted_score !== undefined ? meta.converted_score : row.converted_score,
-                improvement: meta.improvement || row.improvement
+                improvement: meta.improvement || row.improvement,
+                start_date: meta.start_date || row.start_date || '',
+                end_date: meta.end_date || row.end_date || ''
             };
         }
 
@@ -4422,6 +4434,48 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
         let selectedTeacher = null;
         let wizardScores = {};
 
+        function updateEvalDatesFromRound() {
+            const evalYearInput = document.getElementById('eval-year');
+            const evalRoundSelect = document.getElementById('eval-round');
+            const startDateInput = document.getElementById('eval-start-date');
+            const endDateInput = document.getElementById('eval-end-date');
+
+            if (!evalYearInput || !evalRoundSelect || !startDateInput || !endDateInput) return;
+
+            const yearBE = parseInt(evalYearInput.value) || 2568;
+            const yearAD = yearBE - 543;
+            const round = evalRoundSelect.value;
+
+            if (round === 'ครั้งที่ 1') {
+                startDateInput.value = `${yearAD - 1}-10-01`;
+                endDateInput.value = `${yearAD}-03-31`;
+            } else if (round === 'ครั้งที่ 2') {
+                startDateInput.value = `${yearAD}-04-01`;
+                endDateInput.value = `${yearAD}-09-30`;
+            }
+        }
+
+        function formatThaiReportDate(dateStr) {
+            if (!dateStr) return '.......................';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '.......................';
+            
+            const thaiMonths = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+
+            const day = date.getDate();
+            const month = thaiMonths[date.getMonth()];
+            const yearBE = date.getFullYear() + 543;
+
+            return {
+                day: day,
+                month: month,
+                year: yearBE
+            };
+        }
+
         function resetWizard() {
             currentWizardStep = 1;
             selectedTeacher = null;
@@ -4469,6 +4523,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 if (txtName) txtName.value = session.name === 'ณัฐิวุฒิ พลนาคู' ? 'ณัฐิวุฒิ พลนาคู' : session.name || '';
                 if (txtPos) txtPos.value = session.position || '';
             }
+            updateEvalDatesFromRound();
         }
 
         async function populateTeacherDropdown() {
@@ -4588,6 +4643,8 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
 
             const evalRoundEl = document.getElementById('eval-round');
             if (evalRoundEl) evalRoundEl.value = teacher.evaluation_round || 'ครั้งที่ 1';
+
+            updateEvalDatesFromRound();
 
             const fieldsMap = {
                 'leave-sick-times': teacher.leave_sick_times,
@@ -5208,6 +5265,20 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             const evalYear = document.getElementById('eval-year').value;
             const evalRound = document.getElementById('eval-round').value;
 
+            // Date Pickers formatting
+            const startDateStr = document.getElementById('eval-start-date')?.value || '';
+            const endDateStr = document.getElementById('eval-end-date')?.value || '';
+            const startThai = formatThaiReportDate(startDateStr);
+            const endThai = formatThaiReportDate(endDateStr);
+
+            const roundDateHtml = (typeof startThai === 'object' && typeof endThai === 'object' && startThai.day && endThai.day) ? `
+                รอบการประเมิน ระหว่างวันที่ ${startThai.day} เดือน ${startThai.month} พ.ศ. ${startThai.year}
+                ถึงวันที่ ${endThai.day} เดือน ${endThai.month} พ.ศ. ${endThai.year}
+            ` : `
+                รอบการประเมิน ระหว่างวันที่ 1 เดือนตุลาคม พ.ศ. ${escapeHTML(evalYear) ? String(parseInt(evalYear) - 1) : '....'}
+                ถึงวันที่ 30 เดือนกันยายน พ.ศ. ${escapeHTML(evalYear)}
+            `;
+
             // Compute scores
             let finalPercent = 0;
             let overallConvertedScore = 0;
@@ -5322,8 +5393,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     <div style="border-top: 2px solid #000; margin: 8px 0;"></div>
 
                     <div style="font-size: 13px; margin-bottom: 8px; text-align: center;">
-                        รอบการประเมิน ระหว่างวันที่ 1 เดือนตุลาคม พ.ศ. ${escapeHTML(evalYear) ? String(parseInt(evalYear) - 1) : '....'}
-                        ถึงวันที่ 30 เดือนกันยายน พ.ศ. ${escapeHTML(evalYear)}
+                        ${roundDateHtml}
                     </div>
 
                     <div style="border-top: 1px solid #000; margin: 8px 0;"></div>
@@ -5545,6 +5615,8 @@ ${sheet.innerHTML}
                 teacher_dept: selectedTeacher.department,
                 academic_year: evalYear,
                 round: evalRound,
+                start_date: document.getElementById('eval-start-date')?.value || '',
+                end_date: document.getElementById('eval-end-date')?.value || '',
                 evaluator_name: evaluatorName,
                 evaluator_position: evaluatorPos,
                 raw_score: overallRawScore,
