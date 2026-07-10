@@ -4081,7 +4081,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     {
                         id: 'part1_2',
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
-                        maxScore: 20,
+                        maxScore: 40,
                         items: [
                             { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
                             { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
@@ -4094,7 +4094,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                             return r1 + r2 + r3;
                         },
                         scaleToTotal: (score) => {
-                            return (score * 20) / 40;
+                            return score;
                         }
                     }
                 ]
@@ -4135,7 +4135,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     {
                         id: 'part1_2',
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
-                        maxScore: 20,
+                        maxScore: 40,
                         items: [
                             { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
                             { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
@@ -4148,7 +4148,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                             return r1 + r2 + r3; // Returns sum of direct scores (max 40)
                         },
                         scaleToTotal: (score) => {
-                            return (score * 20) / 40; // Scale 40 to 20 points
+                            return score;
                         }
                     }
                 ]
@@ -4189,7 +4189,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                     {
                         id: 'part1_2',
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
-                        maxScore: 20,
+                        maxScore: 40,
                         items: [
                             { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
                             { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
@@ -4202,7 +4202,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                             return r1 + r2 + r3;
                         },
                         scaleToTotal: (score) => {
-                            return (score * 20) / 40;
+                            return score;
                         }
                     }
                 ]
@@ -5107,15 +5107,15 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 const part1Score = template.parts[0].calculate(wizardScores);
                 const part2RawScore = template.parts[1].calculate(wizardScores);
                 const part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part2RawScore) : part2RawScore;
-                overallConvertedScore = part1Score + part2Score;
+                overallConvertedScore = ((part1Score + part2Score) / 120) * 100;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'pa_rubric') {
                 // PA Teacher (No rank / Expert rank)
                 const part1_1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100; // Scaled to 100% since Element 2 & 3 are removed
-                finalPercent = overallConvertedScore; // Base is 100
+                overallConvertedScore = part1_1Score + part1_2Score; // 60 + 40 = 100
+                finalPercent = overallConvertedScore; // Base is already 100
             } else if (template.type === 'gov_staff_rubric') {
                 // Government Employee (Achievement 80% + Competency 20%)
                 const part1Score = template.parts[0].calculate(wizardScores);
@@ -5320,13 +5320,13 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                 part1Score = template.parts[0].calculate(wizardScores);
                 const part2RawScore = template.parts[1].calculate(wizardScores);
                 part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part2RawScore) : part2RawScore;
-                overallConvertedScore = part1Score + part2Score;
+                overallConvertedScore = ((part1Score + part2Score) / 120) * 100;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'pa_rubric') {
                 part1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                overallConvertedScore = ((part1Score + part2Score) / 80) * 100;
+                overallConvertedScore = part1Score + part2Score;
                 finalPercent = overallConvertedScore;
             } else {
                 let totalRawScore = 0, maxRawPossible = 0;
@@ -5348,7 +5348,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             // Determine part1/part2 max display values for PA form
             const isPaType = (template.type === 'rubric_1_4' || template.type === 'pa_rubric');
             const part1Max = template.type === 'rubric_1_4' ? 80 : 60;
-            const part2Max = template.type === 'rubric_1_4' ? 20 : 20;
+            const part2Max = 40;
             // Scale for display: pa_rubric total is out of 80, show as percentage of 100
             const part1Display = template.type === 'pa_rubric' ? ((part1Score / 60) * 60).toFixed(1) : part1Score.toFixed(1);
             const part2Display = part2Score.toFixed(1);
@@ -5614,13 +5614,13 @@ ${sheet.innerHTML}
                 const part1Score = template.parts[0].calculate(wizardScores);
                 const part2RawScore = template.parts[1].calculate(wizardScores);
                 const part2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part2RawScore) : part2RawScore;
-                overallConvertedScore = part1Score + part2Score;
+                overallConvertedScore = ((part1Score + part2Score) / 120) * 100;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'pa_rubric') {
                 const part1_1Score = template.parts[0].calculate(wizardScores);
                 const part1_2RawScore = template.parts[1].calculate(wizardScores);
                 const part1_2Score = template.parts[1].scaleToTotal ? template.parts[1].scaleToTotal(part1_2RawScore) : part1_2RawScore;
-                overallConvertedScore = ((part1_1Score + part1_2Score) / 80) * 100;
+                overallConvertedScore = part1_1Score + part1_2Score;
                 finalPercent = overallConvertedScore;
             } else if (template.type === 'gov_staff_rubric') {
                 const part1Score = template.parts[0].calculate(wizardScores);
