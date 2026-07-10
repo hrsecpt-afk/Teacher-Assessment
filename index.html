@@ -2293,7 +2293,7 @@
                                             <input type="radio" name="contract-renewal" value="เห็นควรปรับปรุงก่อนต่อสัญญาจ้าง">
                                             <span id="label-renewal-2">เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง</span>
                                         </label>
-                                        <label class="radio-label">
+                                        <label id="label-container-renewal-3" class="radio-label">
                                             <input type="radio" name="contract-renewal" value="ไม่ต่อสัญญาจ้าง">
                                             <span id="label-renewal-3">ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน</span>
                                         </label>
@@ -4562,10 +4562,12 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             const r1El = document.getElementById('label-renewal-1');
             const r2El = document.getElementById('label-renewal-2');
             const r3El = document.getElementById('label-renewal-3');
+            const r3Container = document.getElementById('label-container-renewal-3');
             if (titleEl) titleEl.innerText = 'ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน';
             if (r1El) r1El.innerText = 'เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
             if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง';
             if (r3El) r3El.innerText = 'ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน';
+            if (r3Container) r3Container.style.display = '';
         }
 
         async function populateTeacherDropdown() {
@@ -4719,16 +4721,25 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
             const r2El = document.getElementById('label-renewal-2');
             const r3El = document.getElementById('label-renewal-3');
 
+            const r3Container = document.getElementById('label-container-renewal-3');
             if (isGov) {
                 if (titleEl) titleEl.innerText = 'ผลการประเมินและการเลื่อนเงินเดือน';
                 if (r1El) r1El.innerText = 'ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
                 if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องการปฏิบัติงาน';
-                if (r3El) r3El.innerText = 'ไม่ผ่านเกณฑ์การประเมิน';
+                if (r3Container) r3Container.style.display = 'none';
+                
+                // If Option 3 is currently checked, reset to Option 1
+                const r3Radio = document.querySelector('input[name="contract-renewal"][value="ไม่ต่อสัญญาจ้าง"]');
+                if (r3Radio && r3Radio.checked) {
+                    const r1Radio = document.querySelector('input[name="contract-renewal"][value="เห็นสมควรต่อสัญญาจ้าง"]');
+                    if (r1Radio) r1Radio.checked = true;
+                }
             } else {
                 if (titleEl) titleEl.innerText = 'ความเห็นเกี่ยวกับสัญญาจ้าง / การจ้างงาน';
                 if (r1El) r1El.innerText = 'เห็นสมควรต่อสัญญาจ้าง / ผ่านเกณฑ์การประเมินเพื่อเลื่อนเงินเดือน';
                 if (r2El) r2El.innerText = 'เห็นควรปรับปรุงแก้ไขข้อบกพร่องก่อนต่อสัญญาจ้าง';
                 if (r3El) r3El.innerText = 'ไม่ต่อสัญญาจ้าง / ไม่ผ่านเกณฑ์การประเมิน';
+                if (r3Container) r3Container.style.display = '';
             }
         }
 
