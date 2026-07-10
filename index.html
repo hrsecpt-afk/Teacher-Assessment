@@ -4071,20 +4071,15 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
                         maxScore: 20,
                         items: [
-                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 4 },
-                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 4 },
-                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 4 }
+                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
+                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
+                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 10 }
                         ],
                         calculate: (scores) => {
-                            const r1 = scores['part1_2_0'] || 0;
-                            const r2 = scores['part1_2_1'] || 0;
-                            const r3 = scores['part1_2_2'] || 0;
-
-                            const p1 = r1 === 4 ? 20 : r1 === 3 ? 15 : r1 === 2 ? 10 : r1 === 1 ? 5 : 0;
-                            const p2 = r2 === 4 ? 10 : r2 === 3 ? 7.5 : r2 === 2 ? 5 : r2 === 1 ? 2.5 : 0;
-                            const p3 = r3 === 4 ? 10 : r3 === 3 ? 7.5 : r3 === 2 ? 5 : r3 === 1 ? 2.5 : 0;
-
-                            return p1 + p2 + p3;
+                            const r1 = parseFloat(scores['part1_2_0']) || 0;
+                            const r2 = parseFloat(scores['part1_2_1']) || 0;
+                            const r3 = parseFloat(scores['part1_2_2']) || 0;
+                            return r1 + r2 + r3;
                         },
                         scaleToTotal: (score) => {
                             return (score * 20) / 40;
@@ -4130,20 +4125,15 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
                         maxScore: 20,
                         items: [
-                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 4 },
-                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 4 },
-                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 4 }
+                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
+                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
+                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 10 }
                         ],
                         calculate: (scores) => {
-                            const r1 = scores['part1_2_0'] || 0;
-                            const r2 = scores['part1_2_1'] || 0;
-                            const r3 = scores['part1_2_2'] || 0;
-
-                            const p1 = r1 === 4 ? 20 : r1 === 3 ? 15 : r1 === 2 ? 10 : r1 === 1 ? 5 : 0;
-                            const p2 = r2 === 4 ? 10 : r2 === 3 ? 7.5 : r2 === 2 ? 5 : r2 === 1 ? 2.5 : 0;
-                            const p3 = r3 === 4 ? 10 : r3 === 3 ? 7.5 : r3 === 2 ? 5 : r3 === 1 ? 2.5 : 0;
-
-                            return p1 + p2 + p3; // Returns sum of converted values (max 40)
+                            const r1 = parseFloat(scores['part1_2_0']) || 0;
+                            const r2 = parseFloat(scores['part1_2_1']) || 0;
+                            const r3 = parseFloat(scores['part1_2_2']) || 0;
+                            return r1 + r2 + r3; // Returns sum of direct scores (max 40)
                         },
                         scaleToTotal: (score) => {
                             return (score * 20) / 40; // Scale 40 to 20 points
@@ -4189,20 +4179,15 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         title: 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน',
                         maxScore: 20,
                         items: [
-                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 4 },
-                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 4 },
-                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 4 }
+                            { text: '1. วิธีดำเนินการ (เต็ม 20 คะแนน) บรรลุข้อตกลงและถูกต้องครบถ้วน', max: 20 },
+                            { text: '2.1 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงปริมาณ (เต็ม 10 คะแนน)', max: 10 },
+                            { text: '2.2 ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง - เชิงคุณภาพ (เต็ม 10 คะแนน)', max: 10 }
                         ],
                         calculate: (scores) => {
-                            const r1 = scores['part1_2_0'] || 0;
-                            const r2 = scores['part1_2_1'] || 0;
-                            const r3 = scores['part1_2_2'] || 0;
-
-                            const p1 = r1 === 4 ? 20 : r1 === 3 ? 15 : r1 === 2 ? 10 : r1 === 1 ? 5 : 0;
-                            const p2 = r2 === 4 ? 10 : r2 === 3 ? 7.5 : r2 === 2 ? 5 : r2 === 1 ? 2.5 : 0;
-                            const p3 = r3 === 4 ? 10 : r3 === 3 ? 7.5 : r3 === 2 ? 5 : r3 === 1 ? 2.5 : 0;
-
-                            return p1 + p2 + p3;
+                            const r1 = parseFloat(scores['part1_2_0']) || 0;
+                            const r2 = parseFloat(scores['part1_2_1']) || 0;
+                            const r3 = parseFloat(scores['part1_2_2']) || 0;
+                            return r1 + r2 + r3;
                         },
                         scaleToTotal: (score) => {
                             return (score * 20) / 40;
@@ -4772,7 +4757,7 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         const isPart2Level5 = (part.id === 'part2' && template.type !== 'gov_staff_rubric'); // Element 2 allows 1-5 rating
 
                         // Dynamically insert domain sub-headings for civil servant teacher templates
-                        if (template.type === 'rubric_1_4' || template.type === 'pa_rubric') {
+                        if ((template.type === 'rubric_1_4' || template.type === 'pa_rubric') && (part.id === 'part1' || part.id === 'part1_1')) {
                             const trimmedText = item.text.trim();
                             let subHeadingText = '';
                             if (trimmedText.startsWith('1.1')) {
@@ -4812,6 +4797,16 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                                                 ระดับ ${val}
                                             </label>
                                         `).join('')}
+                                    </div>
+                                </td>
+                            `;
+                        } else if (part.id === 'part1_2' && (template.type === 'rubric_1_4' || template.type === 'pa_rubric')) {
+                            // Part 2 for civil servants: Numeric input field directly
+                            html += `
+                                <td colspan="4" style="text-align: center; vertical-align: middle; padding: 12px;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                                        <span style="font-size: 12px; color: var(--text-secondary);">ระบุคะแนน (เต็ม ${item.max}):</span>
+                                        <input type="number" name="${scoreKey}" min="0" max="${item.max}" step="0.5" class="form-control" placeholder="0-${item.max}" onchange="setScore('${scoreKey}', this.value)" style="width: 100px; text-align: center; font-family: var(--font-eng); background-color: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 4px 8px;" value="${wizardScores[scoreKey] !== undefined ? wizardScores[scoreKey] : ''}">
                                     </div>
                                 </td>
                             `;
@@ -4902,10 +4897,29 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
         }
 
         function setScore(key, value) {
-            const numericVal = value === "" ? undefined : parseFloat(value);
+            let numericVal = value === "" ? undefined : parseFloat(value);
             if (numericVal === undefined) {
                 delete wizardScores[key];
             } else {
+                // Limit score for Part 2 of civil servants
+                if (key.startsWith('part1_2_')) {
+                    const idx = parseInt(key.split('_')[2]);
+                    const template = EVAL_TEMPLATES[selectedTeacher.role];
+                    const part = template?.parts.find(p => p.id === 'part1_2');
+                    if (part && part.items[idx]) {
+                        const maxVal = part.items[idx].max;
+                        if (numericVal > maxVal) {
+                            alert(`คะแนนต้องไม่เกิน ${maxVal} คะแนน`);
+                            numericVal = maxVal;
+                            const inputEl = document.querySelector(`input[name="${key}"]`);
+                            if (inputEl) inputEl.value = maxVal;
+                        } else if (numericVal < 0 || isNaN(numericVal)) {
+                            numericVal = 0;
+                            const inputEl = document.querySelector(`input[name="${key}"]`);
+                            if (inputEl) inputEl.value = 0;
+                        }
+                    }
+                }
                 wizardScores[key] = numericVal;
             }
 
