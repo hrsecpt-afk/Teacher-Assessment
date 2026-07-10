@@ -4771,6 +4771,29 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS leave_other_days INTEGER DEFAULT 0
                         const scoreKey = `${part.id}_${index}`;
                         const isPart2Level5 = (part.id === 'part2' && template.type !== 'gov_staff_rubric'); // Element 2 allows 1-5 rating
 
+                        // Dynamically insert domain sub-headings for civil servant teacher templates
+                        if (template.type === 'rubric_1_4' || template.type === 'pa_rubric') {
+                            const trimmedText = item.text.trim();
+                            let subHeadingText = '';
+                            if (trimmedText.startsWith('1.1')) {
+                                subHeadingText = 'ด้านที่ 1 ด้านการจัดการเรียนรู้';
+                            } else if (trimmedText.startsWith('2.1')) {
+                                subHeadingText = 'ด้านที่ 2 ด้านการส่งเสริมและสนับสนุนการจัดการเรียนรู้';
+                            } else if (trimmedText.startsWith('3.1')) {
+                                subHeadingText = 'ด้านที่ 3 ด้านการพัฒนาตนเองและวิชาชีพ';
+                            }
+
+                            if (subHeadingText) {
+                                html += `
+                                    <tr class="eval-sub-header">
+                                        <td colspan="6" style="font-weight: 700; background-color: rgba(59, 130, 246, 0.08); color: var(--accent-blue); padding: 10px 16px; font-size: 13.5px; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                                            ${subHeadingText}
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        }
+
                         html += `
                             <tr>
                                 <td style="font-size: 13px; line-height: 1.5; padding: 12px 16px;">
