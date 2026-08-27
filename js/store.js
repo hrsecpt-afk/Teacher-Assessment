@@ -61,9 +61,16 @@ var Store = (function () {
       if (!raw) return false;
       var parsed = JSON.parse(raw);
       db.settings = Object.assign({}, db.settings, parsed.settings || {});
-      /* เครื่องที่เคยบันทึกค่าว่างไว้ ให้กลับไปใช้ค่าที่ฝังมากับระบบ
-         จะได้ไม่ต้องมานั่งกรอก URL ใหม่ */
-      if (!db.settings.gsUrl) db.settings.gsUrl = DEFAULT_GS_URL;
+      /* ที่อยู่ Web app ที่เก็บไว้ต้องเป็น URL เต็มของ Apps Script เท่านั้น
+         ถ้าว่าง หรือเคยบันทึกค่าที่ไม่สมบูรณ์ไว้ (เช่นคัดลอกมาไม่ครบจนขาด https://
+         ซึ่งเบราว์เซอร์จะตีความเป็นที่อยู่ภายในเว็บแล้วได้ 404)
+         ให้ทิ้งค่านั้นแล้วกลับไปใช้ค่าที่ฝังมากับระบบ */
+      if (!isValidGsUrl(db.settings.gsUrl)) {
+        if (db.settings.gsUrl) {
+          console.warn('ที่อยู่ Web app ที่บันทึกไว้ไม่ถูกต้อง จึงเปลี่ยนกลับเป็นค่าเริ่มต้น:', db.settings.gsUrl);
+        }
+        db.settings.gsUrl = DEFAULT_GS_URL;
+      }
       for (var i = 0; i < TABLES.length; i++) db[TABLES[i]] = parsed[TABLES[i]] || [];
       return true;
     } catch (e) {
@@ -90,7 +97,13 @@ var Store = (function () {
    * เบราว์เซอร์จะได้ไม่ยิง preflight (OPTIONS) ซึ่ง Apps Script ตอบไม่ได้
    * ===================================================================== */
 
-  function gsConfigured() { return !!db.settings.gsUrl; }
+  /* ต้องเป็น URL เต็มของ Apps Script เท่านั้น — ที่อยู่แบบสัมพัทธ์จะถูกต่อกับโดเมนของเว็บ
+     แล้วได้ 404 โดยไม่มีอะไรบอกว่าผิดตรงไหน */
+  function isValidGsUrl(u) {
+    return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec\/?$/.test(String(u || '').trim());
+  }
+
+  function gsConfigured() { return isValidGsUrl(db.settings.gsUrl); }
 
   var queue = Promise.resolve();   /* ส่งทีละคำขอ กันเขียนชนกัน */
 
@@ -105,6 +118,11 @@ var Store = (function () {
       body: JSON.stringify(body),
       redirect: 'follow'
     }).then(function (r) {
+      if (r.status === 404) {
+        throw new Error('HTTP 404 — ไม่พบที่อยู่ Web app ' +
+          '(ที่อยู่ที่บันทึกไว้ไม่ถูกต้อง ให้ล้างช่อง Web app URL ในหน้าตั้งค่าระบบแล้วบันทึก ' +
+          'ระบบจะกลับไปใช้ค่าเริ่มต้นให้เอง)');
+      }
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.text();
     }).then(function (text) {
@@ -479,6 +497,9 @@ var Store = (function () {
 
   function seedIfEmpty() {
     if (db.people.length || db.evaluators.length) return false;
+    /* ถ้าตั้งค่าเชื่อม Google ไว้แล้วแต่ดึงข้อมูลไม่สำเร็จ ห้ามสร้างข้อมูลตั้งต้น
+       ไม่งั้นจะได้บัญชีซ้ำเมื่อเครื่องนั้นกลับมาเชื่อมต่อได้แล้วส่งขึ้นชีต */
+    if (gsConfigured() && syncState.mode !== 'cloud') return false;
     var chair = setPassword({
       id: uid('ev'), name: ORG.directorName, title: ORG.directorTitle,
       username: 'director', isChair: true
