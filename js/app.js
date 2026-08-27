@@ -151,6 +151,26 @@ var App = (function () {
     $('login-screen').style.display = 'flex';
     $('login-org').textContent = Store.getSettings().orgName;
     renderLoginForm();
+    stampVersion();
+  }
+
+  /* ป้ายมุมล่าง บอกเวอร์ชันและจำนวนข้อมูลที่โหลดมาได้
+     ใช้ตรวจว่าเบราว์เซอร์ติดแคชไฟล์เก่าหรือโหลดข้อมูลไม่ได้ */
+  function stampVersion() {
+    var card = document.querySelector('.login-card');
+    if (!card) return;
+    var el = $('login-version');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'login-version';
+      el.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid #e6eaf0;' +
+        'font-size:11.5px;color:#8b96a8;text-align:center;line-height:1.7';
+      card.appendChild(el);
+    }
+    var st = Store.syncState();
+    el.innerHTML = 'เวอร์ชัน ' + esc(APP_VERSION) +
+      ' · ข้อมูล ' + Store.all('people').length + '/' + Store.all('evaluators').length +
+      '<br>' + esc(st.message) + (st.error ? ' — ' + esc(st.error) : '');
   }
 
   function loginVisible() {

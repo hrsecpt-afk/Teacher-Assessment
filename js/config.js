@@ -14,6 +14,10 @@
 var DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbwDWdE1pSoJEyRjAztnjWG5zqhan3U5IHsIPGofUUewM0Yt9PPh3OUqd7Yyb8uK0s6f/exec';
 var DEFAULT_GS_KEY = '';
 
+/* เวอร์ชันของหน้าเว็บ — แสดงมุมล่างของหน้าเข้าระบบ
+ * ใช้ยืนยันว่าเบราว์เซอร์โหลดไฟล์ตัวใหม่แล้วจริง ไม่ได้ติดแคชตัวเก่า */
+var APP_VERSION = '2026-08-27 ก';
+
 var ORG = {
   name: 'ศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี',
   affiliation: 'สำนักบริหารงานการศึกษาพิเศษ',
