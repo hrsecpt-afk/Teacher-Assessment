@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตรวจสอบระบบ — ระบบประเมินผลการปฏิบัติงาน</title>
+<style>
+  body { margin:0; padding:20px; background:#eef1f6; color:#17202e;
+         font-family:'Sarabun','TH Sarabun New','Leelawadee UI',system-ui,sans-serif; line-height:1.6; }
+  .wrap { max-width:640px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:#5b6779; font-size:14px; margin-bottom:18px; }
+  .row { background:#fff; border:1px solid #d9e0ea; border-radius:10px;
+         padding:14px 16px; margin-bottom:10px; }
+  .row .t { font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .row .d { font-size:13.5px; color:#5b6779; margin-top:4px; word-break:break-all; }
+  .ic { font-size:20px; line-height:1; }
+  .ok { color:#16794a; } .bad { color:#b3261e; } .wait { color:#a86500; }
+  .verdict { border-radius:10px; padding:16px; margin:18px 0; font-size:15px; line-height:1.8; }
+  .v-ok { background:#e3f4ec; border:1px solid #a9d9c2; color:#0f5c37; }
+  .v-bad { background:#fbe9e7; border:1px solid #f0c0bb; color:#8a1c16; }
+  .v-wait { background:#fdf1dc; border:1px solid #f0d9a8; color:#6d4200; }
+  button { font-family:inherit; font-size:14px; font-weight:600; padding:10px 16px;
+           border-radius:8px; border:1px solid #1e4d8c; background:#1e4d8c; color:#fff; cursor:pointer; }
+  button.alt { background:#fff; color:#17202e; border-color:#b9c4d4; }
+  .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  pre { background:#f7f9fc; border:1px solid #d9e0ea; border-radius:8px; padding:10px;
+        font-size:12px; overflow-x:auto; white-space:pre-wrap; word-break:break-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ตรวจสอบระบบ</h1>
+  <div class="sub">หน้านี้ใช้หาสาเหตุเมื่อรายชื่อไม่ขึ้น — รอสักครู่ให้ตรวจครบทุกข้อ</div>
+
+  <div id="rows"></div>
+  <div id="verdict"></div>
+
+  <div class="btns">
+    <button onclick="location.href='index.html?v='+Date.now()">เปิดระบบประเมิน</button>
+    <button class="alt" onclick="location.reload()">ตรวจใหม่อีกครั้ง</button>
+    <button class="alt" onclick="copyAll()">คัดลอกผลตรวจ</button>
+  </div>
+
+  <div style="margin-top:18px">
+    <div style="font-size:13px;color:#5b6779;margin-bottom:6px">ข้อมูลสำหรับส่งให้ผู้ดูแลระบบ</div>
+    <pre id="dump">กำลังตรวจ…</pre>
+  </div>
+</div>
+
+<script src="js/config.js?c=1"></script>
+<script>
+var results = [];
+
+function add(name, state, detail) {
+  results.push({ name: name, state: state, detail: detail });
+  render();
+}
+
+function render() {
+  var icons = { ok: '✅', bad: '❌', wait: '⏳' };
+  document.getElementById('rows').innerHTML = results.map(function (r) {
+    return '<div class="row"><div class="t"><span class="ic ' + r.state + '">' +
+      icons[r.state] + '</span>' + r.name + '</div>' +
+      '<div class="d">' + r.detail + '</div></div>';
+  }).join('');
+
+  document.getElementById('dump').textContent = results.map(function (r) {
+    return (r.state === 'ok' ? '[ผ่าน] ' : r.state === 'bad' ? '[ไม่ผ่าน] ' : '[รอ] ') +
+      r.name + ' : ' + r.detail.replace(/<[^>]+>/g, '');
+  }).join('\n') + '\n\nเบราว์เซอร์: ' + navigator.userAgent;
+}
+
+function verdict(cls, html) {
+  document.getElementById('verdict').innerHTML = '<div class="verdict v-' + cls + '">' + html + '</div>';
+}
+
+function copyAll() {
+  var t = document.getElementById('dump').textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { alert('คัดลอกแล้ว'); });
+  else alert('กรุณาเลือกข้อความในกล่องด้านล่างแล้วคัดลอกเอง');
+}
+
+/* ---------- เริ่มตรวจ ---------- */
+
+(function run() {
+  /* 1. ไฟล์โค้ดโหลดครบไหม */
+  if (typeof APP_VERSION === 'undefined') {
+    add('ไฟล์ระบบ (js/config.js)', 'bad', 'โหลดไม่สำเร็จ — เบราว์เซอร์อาจบล็อกไฟล์ หรือเน็ตมีปัญหา');
+    verdict('bad', '<b>ไฟล์ของระบบโหลดไม่ได้</b><br>' +
+      'มักเกิดจากส่วนขยายเบราว์เซอร์ (ตัวบล็อกโฆษณา / แอนตี้ไวรัส) บล็อกไว้ ' +
+      'หรือเน็ตของหน่วยงานปิดกั้น<br>ลองปิดส่วนขยายทั้งหมด แล้วกด “ตรวจใหม่อีกครั้ง”');
+    return;
+  }
+  add('ไฟล์ระบบ (js/config.js)', 'ok', 'โหลดสำเร็จ · เวอร์ชันในเครื่อง: <b>' + APP_VERSION + '</b>');
+
+  /* 2. เวอร์ชันบนเซิร์ฟเวอร์ */
+  add('เวอร์ชันล่าสุดบนเซิร์ฟเวอร์', 'wait', 'กำลังตรวจ…');
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      var same = j.version === APP_VERSION;
+      results[1] = {
+        name: 'เวอร์ชันล่าสุดบนเซิร์ฟเวอร์', state: same ? 'ok' : 'bad',
+        detail: 'เซิร์ฟเวอร์: <b>' + j.version + '</b> · ในเครื่อง: <b>' + APP_VERSION + '</b>' +
+          (same ? ' — ตรงกัน' : ' — <b>ไม่ตรงกัน แปลว่าเบราว์เซอร์ใช้ไฟล์เก่าที่ค้างอยู่</b>')
+      };
+      render();
+      if (!same) {
+        verdict('bad', '<b>เบราว์เซอร์ยังใช้ไฟล์เก่าที่ค้างในหน่วยความจำ</b><br>' +
+          'วิธีแก้: กด <b>Ctrl+Shift+Delete</b> → เลือก “รูปภาพและไฟล์ที่แคชไว้” → ล้างข้อมูล ' +
+          'แล้วเปิดหน้านี้ใหม่');
+      }
+      step3();
+    })['catch'](function (e) {
+      results[1] = { name: 'เวอร์ชันล่าสุดบนเซิร์ฟเวอร์', state: 'bad', detail: 'อ่านไม่ได้: ' + e.message };
+      render(); step3();
+    });
+})();
+
+/* 3. ต่อ Google Apps Script ได้ไหม */
+function step3() {
+  add('เชื่อมต่อ Google (อ่านข้อมูล)', 'wait', 'กำลังติดต่อ… อาจใช้เวลา 5–15 วินาที');
+  var idx = results.length - 1;
+  var t0 = Date.now();
+
+  fetch(DEFAULT_GS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'pull', key: DEFAULT_GS_KEY || '' }),
+    redirect: 'follow'
+  })
+    .then(function (r) { return r.text(); })
+    .then(function (txt) {
+      var sec = ((Date.now() - t0) / 1000).toFixed(1);
+      var j;
+      try { j = JSON.parse(txt); } catch (e) {
+        results[idx] = { name: 'เชื่อมต่อ Google (อ่านข้อมูล)', state: 'bad',
+          detail: 'ตอบกลับผิดรูปแบบ (' + sec + ' วิ): ' + txt.slice(0, 100) };
+        render();
+        verdict('bad', '<b>Google ตอบกลับผิดปกติ</b><br>อาจต้อง Deploy Web app ใหม่ แจ้งผู้ดูแลระบบ');
+        return;
+      }
+      if (!j.ok) {
+        results[idx] = { name: 'เชื่อมต่อ Google (อ่านข้อมูล)', state: 'bad', detail: 'เซิร์ฟเวอร์แจ้ง: ' + j.error };
+        render(); return;
+      }
+      var d = j.data;
+      results[idx] = { name: 'เชื่อมต่อ Google (อ่านข้อมูล)', state: 'ok',
+        detail: 'สำเร็จใน ' + sec + ' วินาที' };
+      render();
+
+      add('ข้อมูลที่ดึงมาได้', d.people.length ? 'ok' : 'bad',
+        'ผู้รับการประเมิน <b>' + d.people.length + '</b> คน · ' +
+        'กรรมการ <b>' + d.evaluators.length + '</b> คน · ' +
+        'รอบการประเมิน <b>' + d.assignments.length + '</b> รายการ');
+
+      if (d.people.length) {
+        verdict('ok', '<b>ทุกอย่างปกติ</b><br>' +
+          'เบราว์เซอร์นี้ใช้งานระบบได้ กดปุ่ม “เปิดระบบประเมิน” ด้านล่างได้เลย<br>' +
+          'ถ้ากดแล้วรายชื่อยังไม่ขึ้น ให้แจ้งผู้ดูแลระบบพร้อมส่งข้อความในกล่องด้านล่าง');
+      } else {
+        verdict('bad', '<b>เชื่อมต่อได้ แต่ไม่มีรายชื่อในฐานข้อมูล</b><br>แจ้งผู้ดูแลระบบให้ตรวจ Google Sheets');
+      }
+    })
+    ['catch'](function (e) {
+      var sec = ((Date.now() - t0) / 1000).toFixed(1);
+      results[idx] = { name: 'เชื่อมต่อ Google (อ่านข้อมูล)', state: 'bad',
+        detail: 'ติดต่อไม่ได้ (' + sec + ' วิ) — ' + e.message };
+      render();
+      verdict('bad', '<b>เบราว์เซอร์นี้ติดต่อ Google ไม่ได้</b><br>' +
+        'สาเหตุที่พบบ่อยเรียงตามความเป็นไปได้<br>' +
+        '1. <b>ส่วนขยายเบราว์เซอร์</b> เช่น ตัวบล็อกโฆษณา หรือแอนตี้ไวรัส — ลองปิดทั้งหมดแล้วตรวจใหม่<br>' +
+        '2. <b>เน็ตของหน่วยงานปิดกั้น</b> script.google.com — ลองสลับไปใช้เน็ตมือถือ<br>' +
+        '3. โปรแกรมป้องกันไวรัสที่มีระบบกรองเว็บ — ลองปิดชั่วคราว');
+    });
+}
+
+/* 4. พื้นที่จัดเก็บในเบราว์เซอร์ */
+setTimeout(function () {
+  try {
+    localStorage.setItem('pa_test', '1');
+    localStorage.removeItem('pa_test');
+    var db = localStorage.getItem('pa_eval_db_v1');
+    add('พื้นที่จัดเก็บในเบราว์เซอร์', 'ok',
+      'ใช้งานได้' + (db ? ' · มีข้อมูลเดิมค้างอยู่ ' + Math.round(db.length / 1024) + ' KB' : ' · ยังไม่มีข้อมูลเดิม'));
+  } catch (e) {
+    add('พื้นที่จัดเก็บในเบราว์เซอร์', 'bad',
+      'ใช้ไม่ได้: ' + e.message + ' — เบราว์เซอร์อาจปิดกั้นคุกกี้/ที่เก็บข้อมูลของเว็บนี้');
+  }
+}, 500);
+</script>
+</body>
+</html>
