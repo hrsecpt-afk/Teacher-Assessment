@@ -1869,7 +1869,28 @@ var App = (function () {
    * เริ่มต้น
    * ------------------------------------------------------------------- */
 
+  /* เทียบเวอร์ชันกับไฟล์บนเซิร์ฟเวอร์ ถ้าเบราว์เซอร์ยังใช้ไฟล์เก่าที่ค้างในแคช
+   * จะพาไปที่ URL ใหม่ (เปลี่ยน query) ซึ่งบังคับให้โหลดใหม่ทั้งหมด
+   * ผู้ใช้ไม่ต้องรู้จักการล้างแคชเอง */
+  function checkForUpdate() {
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+    if (typeof fetch !== 'function') return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.version || j.version === APP_VERSION) return;
+        var key = 'pa_reload_' + j.version;
+        /* กันวนซ้ำ: ถ้าโหลดใหม่ไปแล้วรอบหนึ่งแต่ยังไม่ตรง ก็ปล่อยไว้ */
+        try {
+          if (sessionStorage.getItem(key)) return;
+          sessionStorage.setItem(key, '1');
+        } catch (e) { return; }
+        location.replace(location.pathname + '?v=' + encodeURIComponent(j.version));
+      })['catch'](function () { /* ไม่มีไฟล์ version.json ก็ไม่เป็นไร */ });
+  }
+
   function init() {
+    checkForUpdate();
     bindLogin();
     Store.onChange(updateSyncBadge);
     /* ถ้ารายชื่อเพิ่งมาถึงจาก Google Sheets ตอนที่หน้าเข้าระบบยังว่างอยู่ ให้วาดใหม่
