@@ -40,6 +40,11 @@
     <button onclick="location.href='index.html?v='+Date.now()">เปิดระบบประเมิน</button>
     <button class="alt" onclick="location.reload()">ตรวจใหม่อีกครั้ง</button>
     <button class="alt" onclick="copyAll()">คัดลอกผลตรวจ</button>
+    <button class="alt" onclick="resetLocal()">ล้างข้อมูลค้างในเบราว์เซอร์</button>
+  </div>
+  <div style="font-size:12.5px;color:#5b6779;margin-top:8px">
+    ปุ่ม “ล้างข้อมูลค้าง” ปลอดภัย — ข้อมูลจริงทั้งหมดอยู่ใน Google Sheets
+    ล้างแล้วระบบจะดึงมาใหม่เอง
   </div>
 
   <div style="margin-top:18px">
@@ -73,6 +78,21 @@ function render() {
 
 function verdict(cls, html) {
   document.getElementById('verdict').innerHTML = '<div class="verdict v-' + cls + '">' + html + '</div>';
+}
+
+function resetLocal() {
+  if (!confirm('ล้างข้อมูลที่ค้างอยู่ในเบราว์เซอร์นี้?\n\nข้อมูลจริงอยู่ใน Google Sheets จะไม่หายไปไหน\nระบบจะดึงมาใหม่ทั้งหมด')) return;
+  try {
+    var keys = [];
+    for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+    for (var j = 0; j < keys.length; j++) {
+      if (keys[j] && keys[j].indexOf('pa_') === 0) localStorage.removeItem(keys[j]);
+    }
+    sessionStorage.clear();
+    if (window.indexedDB && indexedDB.deleteDatabase) indexedDB.deleteDatabase('pa_eval_files');
+  } catch (e) { alert('ล้างไม่สำเร็จ: ' + e.message); return; }
+  alert('ล้างเรียบร้อย กำลังเปิดระบบใหม่');
+  location.href = 'index.html?v=' + Date.now();
 }
 
 function copyAll() {
@@ -182,8 +202,15 @@ setTimeout(function () {
     localStorage.setItem('pa_test', '1');
     localStorage.removeItem('pa_test');
     var db = localStorage.getItem('pa_eval_db_v1');
+    var ses = localStorage.getItem('pa_eval_session_v1');
+    var n = 0;
+    if (db) { try { n = (JSON.parse(db).people || []).length; } catch (e) {} }
     add('พื้นที่จัดเก็บในเบราว์เซอร์', 'ok',
-      'ใช้งานได้' + (db ? ' · มีข้อมูลเดิมค้างอยู่ ' + Math.round(db.length / 1024) + ' KB' : ' · ยังไม่มีข้อมูลเดิม'));
+      'ใช้งานได้' +
+      (db ? ' · มีข้อมูลเดิมค้างอยู่ ' + Math.round(db.length / 1024) + ' KB (รายชื่อ ' + n + ' คน)'
+          : ' · ยังไม่มีข้อมูลเดิม') +
+      (ses ? '<br><b>พบการเข้าสู่ระบบค้างไว้</b> — ระบบจะข้ามหน้าเลือกชื่อไปหน้าใช้งานเลย ' +
+             'ถ้าไม่ต้องการ ให้กด “ล้างข้อมูลค้างในเบราว์เซอร์”' : ''));
   } catch (e) {
     add('พื้นที่จัดเก็บในเบราว์เซอร์', 'bad',
       'ใช้ไม่ได้: ' + e.message + ' — เบราว์เซอร์อาจปิดกั้นคุกกี้/ที่เก็บข้อมูลของเว็บนี้');
