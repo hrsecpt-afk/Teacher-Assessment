@@ -217,13 +217,23 @@ var Store = (function () {
   function openIDB() {
     return new Promise(function (resolve) {
       if (!window.indexedDB) return resolve(null);
-      var req = indexedDB.open('pa_eval_files', 1);
-      req.onupgradeneeded = function (e) {
-        var d = e.target.result;
-        if (!d.objectStoreNames.contains('files')) d.createObjectStore('files');
-      };
-      req.onsuccess = function (e) { idb = e.target.result; resolve(idb); };
-      req.onerror = function () { resolve(null); };
+      /* บางเบราว์เซอร์ (โหมดส่วนตัว / มีแท็บเก่าค้าง) จะ "blocked" แล้วไม่ยิง event ใด ๆ
+         ต้องมีเวลาจำกัด ไม่งั้นระบบค้างที่หน้าขาว */
+      var done = false;
+      var finish = function (v) { if (!done) { done = true; resolve(v); } };
+      setTimeout(function () { finish(null); }, 4000);
+      try {
+        var req = indexedDB.open('pa_eval_files', 1);
+        req.onupgradeneeded = function (e) {
+          var d = e.target.result;
+          if (!d.objectStoreNames.contains('files')) d.createObjectStore('files');
+        };
+        req.onsuccess = function (e) { idb = e.target.result; finish(idb); };
+        req.onerror = function () { finish(null); };
+        req.onblocked = function () { finish(null); };
+      } catch (e) {
+        finish(null);
+      }
     });
   }
 
@@ -443,10 +453,28 @@ var Store = (function () {
 
   function init() {
     loadLocal();
-    return openIDB().then(function () {
-      if (gsConfigured()) return gsPull();
-      return false;
-    }).then(function () { return db; });
+    /* ทุกขั้นตอนต้องจบเสมอ ไม่ว่าจะสำเร็จหรือไม่ ระบบจะได้ไม่ค้างที่หน้าขาว
+       ถ้าดึงข้อมูลไม่ได้ก็ใช้สำเนาในเครื่องไปก่อน */
+    return openIDB()['catch'](function () { return null; })
+      .then(function () {
+        if (!gsConfigured()) return false;
+        return Promise.race([
+          gsPull(),
+          new Promise(function (r) { setTimeout(function () { r('timeout'); }, 30000); })
+        ]).then(function (res) {
+          if (res === 'timeout') {
+            syncState.mode = 'local';
+            syncState.error = 'เชื่อมต่อนานเกินไป';
+            syncState.message = 'เชื่อมต่อ Google ไม่สำเร็จ — ใช้ข้อมูลในเครื่อง';
+          }
+          return res;
+        });
+      })['catch'](function (e) {
+        syncState.mode = 'local';
+        syncState.error = e && e.message;
+        syncState.message = 'เชื่อมต่อ Google ไม่สำเร็จ — ใช้ข้อมูลในเครื่อง';
+        return false;
+      }).then(function () { return db; });
   }
 
   function seedIfEmpty() {

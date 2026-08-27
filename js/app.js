@@ -140,7 +140,13 @@ var App = (function () {
    * เข้าสู่ระบบ
    * ------------------------------------------------------------------- */
 
+  function hideBoot() {
+    var b = $('boot');
+    if (b) b.remove();
+  }
+
   function showLogin() {
+    hideBoot();
     $('app').style.display = 'none';
     $('login-screen').style.display = 'flex';
     $('login-org').textContent = Store.getSettings().orgName;
@@ -176,11 +182,21 @@ var App = (function () {
     var options = loginRole === 'evaluator' ? evaluatorOptions() : peopleOptions();
 
     if (!options.count) {
+      var st = Store.syncState();
       host.innerHTML = '<div class="notice notice-warn" style="margin:0">' +
-        'ยังไม่มีรายชื่อในเครื่องนี้<br>' +
-        '<span class="small">ให้ผู้ดูแลระบบเข้าสู่ระบบที่แท็บ “ผู้ดูแลระบบ” แล้วตั้งค่าเชื่อมต่อ Google Sheets ก่อน ' +
-        'จากนั้นรายชื่อจะขึ้นให้เลือกเอง</span></div>';
-      $('login-hint').innerHTML = '';
+        '<b>ยังโหลดรายชื่อไม่ได้</b><br>' +
+        '<span class="small">' + esc(st.message) +
+        (st.error ? '<br>รายละเอียด: ' + esc(st.error) : '') + '</span>' +
+        '<div class="btn-row" style="margin-top:10px">' +
+        '<button class="btn btn-sm btn-primary" type="button" id="login-retry">ลองโหลดรายชื่ออีกครั้ง</button>' +
+        '</div></div>';
+      $('login-hint').innerHTML = 'ถ้ายังไม่ขึ้น ให้กดรีเฟรชหน้าเว็บด้วย Ctrl+Shift+R ' +
+        'หรือแจ้งผู้ดูแลระบบให้ตรวจการเชื่อมต่อ Google Sheets';
+      $('login-retry').onclick = function () {
+        this.disabled = true;
+        this.textContent = 'กำลังโหลด…';
+        Store.gsPull().then(function () { renderLoginForm(); });
+      };
       return;
     }
 
@@ -289,6 +305,7 @@ var App = (function () {
   }
 
   function startApp() {
+    hideBoot();
     $('login-screen').style.display = 'none';
     $('app').style.display = 'flex';
     var s = Store.getSettings();
