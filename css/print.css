@@ -1,0 +1,160 @@
+/* =========================================================================
+ * print.css — แบบฟอร์มราชการสำหรับพิมพ์ / Save as PDF
+ * ใช้ทั้งตอนดูตัวอย่างบนจอ (.preview-stage) และตอนสั่งพิมพ์
+ * ========================================================================= */
+
+/* ---------- ตัวกระดาษ ---------- */
+
+.sheet {
+  background: #fff;
+  color: #000;
+  font-family: 'Sarabun', 'TH Sarabun New', 'Leelawadee UI', serif;
+  font-size: 13.2px;
+  line-height: 1.45;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm 15mm 15mm 20mm;   /* ขอบซ้ายกว้างกว่าไว้เย็บเล่ม (ซ้ายของหน้า = ท้ายบรรทัดไทย) */
+  margin: 0 auto 14px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, .16);
+  position: relative;
+  page-break-after: always;
+  break-after: page;
+}
+.sheet:last-child { page-break-after: auto; break-after: auto; }
+
+.preview-stage {
+  background: #6b7688;
+  padding: 20px 10px 30px;
+  overflow-x: auto;
+  border-radius: var(--radius, 10px);
+}
+
+/* ---------- ส่วนหัวเอกสาร ---------- */
+
+.sheet .form-code {
+  position: absolute; top: 8mm; left: 15mm;
+  font-size: 13px; font-weight: 700;
+}
+.sheet .doc-head { text-align: center; margin-bottom: 8px; }
+.sheet .doc-head .t1 { font-size: 15.5px; font-weight: 700; line-height: 1.5; }
+.sheet .doc-head .t2 { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.sheet .doc-head .t3 { font-size: 13.2px; line-height: 1.5; }
+.sheet .doc-head img.logo { width: 52px; height: 52px; object-fit: contain; margin-bottom: 4px; }
+
+.sheet hr.rule { border: none; border-top: 1px solid #000; margin: 7px 0; }
+.sheet hr.rule-thick { border: none; border-top: 1.6px solid #000; margin: 7px 0; }
+
+/* ---------- บล็อกข้อมูล / เส้นประกรอก ---------- */
+
+.sheet .sec-title {
+  font-weight: 700; font-size: 13.8px; margin: 10px 0 5px;
+}
+.sheet .sec-title.boxed {
+  background: #ececec; padding: 4px 8px; border: 1px solid #000;
+}
+.sheet .info-line { margin: 3px 0; }
+.fill {
+  display: inline-block; border-bottom: 1px dotted #444;
+  min-width: 60px; padding: 0 4px; text-align: center;
+}
+.fill.grow { min-width: 140px; }
+.fill.wide { min-width: 240px; }
+.fill.full { display: block; width: 100%; }
+.fill.blank { border-bottom-style: dotted; }
+
+.chkbox {
+  display: inline-block; width: 11px; height: 11px;
+  border: 1px solid #000; margin-inline-end: 5px; vertical-align: -1px;
+  text-align: center; line-height: 10px; font-size: 10px;
+}
+.chkbox.on::after { content: '✓'; font-weight: 700; }
+
+/* ---------- ตารางในแบบฟอร์ม ---------- */
+
+.sheet table.form {
+  width: 100%; border-collapse: collapse; font-size: 12.6px; margin: 6px 0 10px;
+}
+.sheet table.form th, .sheet table.form td {
+  border: 1px solid #000; padding: 3px 5px; vertical-align: top;
+}
+.sheet table.form th { text-align: center; font-weight: 700; background: #f0f0f0; }
+.sheet table.form td.c { text-align: center; vertical-align: middle; }
+.sheet table.form td.r { text-align: left; }
+.sheet table.form td.num { text-align: center; font-variant-numeric: tabular-nums; vertical-align: middle; }
+.sheet table.form tr.group td {
+  font-weight: 700; background: #f7f7f7;
+}
+.sheet table.form tr.total td { font-weight: 700; background: #f0f0f0; }
+.sheet table.form .idesc { font-size: 11.6px; color: #222; display: block; margin-top: 1px; }
+.sheet table.form .mark { font-weight: 700; font-size: 13px; }
+
+/* ---------- ลายเซ็น ---------- */
+
+.sign-block { margin-top: 16px; text-align: center; font-size: 13px; line-height: 1.9; }
+.sign-block.right { margin-inline-start: auto; width: 58%; }
+.sign-grid { display: flex; gap: 24px; margin-top: 18px; }
+.sign-grid > div { flex: 1; text-align: center; font-size: 12.8px; line-height: 1.9; }
+
+.note-lines { margin: 4px 0 10px; }
+.note-lines .ln { border-bottom: 1px dotted #555; height: 20px; }
+.note-lines .filled { border-bottom: 1px dotted #555; min-height: 20px; padding: 1px 2px; }
+
+.small { font-size: 11.6px; }
+.center { text-align: center; }
+.bold { font-weight: 700; }
+.mt8 { margin-top: 8px; }
+.mt14 { margin-top: 14px; }
+
+/* กล่องคำชี้แจง */
+.callout {
+  border: 1px solid #000; padding: 7px 10px; font-size: 12.2px;
+  margin: 8px 0 10px; line-height: 1.5;
+}
+
+/* แถบเครื่องมือเหนือหน้าพิมพ์ (ไม่พิมพ์ออกมา) */
+.print-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 12px 16px; background: var(--surface, #fff);
+  border: 1px solid var(--border, #d9e0ea); border-radius: 10px; margin-bottom: 14px;
+}
+
+/* =========================================================================
+ * โหมดพิมพ์จริง
+ * ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ซ่อนทุกอย่างยกเว้นกระดาษ */
+  .sidebar, .topbar, .print-toolbar, .toast-wrap, .modal-back,
+  .login-screen, .score-bar, .no-print { display: none !important; }
+
+  .app { display: block !important; }
+  .main { display: block !important; }
+  .content { padding: 0 !important; max-width: none !important; }
+  .preview-stage { background: #fff !important; padding: 0 !important; overflow: visible !important; }
+
+  .sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    padding: 12mm 12mm 12mm 18mm !important;
+  }
+
+  .sheet table.form { page-break-inside: auto; }
+  .sheet table.form tr { page-break-inside: avoid; break-inside: avoid; }
+  .sheet table.form thead { display: table-header-group; }
+  .sign-block, .sign-grid { page-break-inside: avoid; break-inside: avoid; }
+
+  /* พิมพ์สีพื้นของหัวตารางออกมาด้วย */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}

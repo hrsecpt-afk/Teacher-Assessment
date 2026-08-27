@@ -1,17 +1,14 @@
-# OS generated files
+# ไฟล์ระบบปฏิบัติการ
 Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
+desktop.ini
 .DS_Store
 
-# Temporary files
-*.tmp
-*.log
-*.bak
+# ไฟล์สำรองข้อมูลที่ส่งออกจากระบบ (มีข้อมูลบุคคล ไม่ควรขึ้น git)
+สำรองข้อมูลระบบประเมิน-*.json
+*.backup.json
 
-# Local dev/editor caches
-.vscode/
-.idea/
-.agents/
-.gemini/
+# ไฟล์ชั่วคราวของ Office
+~$*
+
+# รายชื่อบัญชีผู้ใช้ (มีรหัสผ่าน ห้ามขึ้น git)
+บัญชีผู้ใช้ระบบประเมิน.csv
