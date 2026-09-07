@@ -782,8 +782,59 @@ var App = (function () {
    * หน้า: รอบการประเมิน (ผู้ดูแล)
    * ------------------------------------------------------------------- */
 
+  /* รอบการประเมินที่ใช้แบบซึ่งไม่ตรงกับตำแหน่งของบุคคลนั้นแล้ว
+   * เช่น รอบเก่าของครูที่ยังผูกกับแบบเลื่อนเงินเดือน หลังจากตำแหน่งนั้นเปลี่ยนมาใช้แบบ PA อย่างเดียว
+   * รอบเหล่านี้จะยังโผล่ในหน้าของกรรมการ จนกว่าผู้ดูแลระบบจะสั่งแก้ */
+  function staleAssignments() {
+    return Store.where('assignments', function (a) {
+      var p = personById(a.personId);
+      if (!p) return false;
+      var allowed = formsForPosition(p.positionKey);
+      if (!allowed.length) return false;
+      for (var i = 0; i < allowed.length; i++) if (allowed[i].key === a.formKey) return false;
+      return true;
+    });
+  }
+
+  /* เปลี่ยนรอบเหล่านั้นให้ใช้แบบปัจจุบันของตำแหน่ง
+   * ต้องลบคะแนนที่กรรมการกรอกไว้ด้วย เพราะคนละแบบใช้รหัสข้อคนละชุด
+   * ถ้าเก็บไว้ คะแนนจะอ่านไม่ตรงข้อ กลายเป็นผลประเมินที่ผิด */
+  function fixStaleAssignments() {
+    var rows = staleAssignments();
+    if (!rows.length) { toast('ไม่มีรอบการประเมินที่ต้องแก้', 'ok'); return; }
+    var nScores = 0;
+    rows.forEach(function (a) { nScores += evaluationsOf(a.id).length; });
+    confirmDo('เปลี่ยน ' + rows.length + ' รอบการประเมิน ให้ใช้แบบประเมินปัจจุบันของตำแหน่งนั้น?' +
+      (nScores ? ' — คะแนนที่กรรมการกรอกไว้ในรอบเหล่านี้ ' + nScores +
+        ' ชุด จะถูกลบ เพราะแบบใหม่ใช้รหัสข้อคนละชุดกับแบบเดิม ต้องให้กรรมการกรอกใหม่' : ''),
+      function () {
+        rows.forEach(function (a) {
+          var p = personById(a.personId);
+          var form = formsForPosition(p.positionKey)[0];
+          evaluationsOf(a.id).forEach(function (e) { Store.remove('evaluations', e.id); });
+          var next = Store.clone(a);
+          next.formKey = form.key;
+          next.formName = form.shortName;
+          Store.upsert('assignments', next);
+        });
+        toast('แก้ไข ' + rows.length + ' รอบการประเมินแล้ว', 'ok');
+        go('assignments');
+      });
+  }
+
   PAGES.assignments = function (host) {
-    var h = '<div class="toolbar"><div style="flex:1"></div>' +
+    var stale = staleAssignments();
+    var h = '';
+    if (stale.length) {
+      h += '<div class="notice notice-warn">' +
+        '<b>พบ ' + stale.length + ' รอบการประเมินที่ใช้แบบประเมินซึ่งเลิกใช้กับตำแหน่งนั้นแล้ว</b><br>' +
+        '<span class="small">รอบเหล่านี้ยังแสดงในหน้าของกรรมการอยู่ ' +
+        'กด “แก้ให้ใช้แบบปัจจุบัน” เพื่อเปลี่ยนไปใช้แบบประเมินของตำแหน่งนั้น ' +
+        'หรือลบทีละรอบจากตารางด้านล่าง</span><br><br>' +
+        '<button class="btn btn-primary btn-sm" onclick="App.fixStaleAssignments()">แก้ให้ใช้แบบปัจจุบัน</button>' +
+        '</div>';
+    }
+    h += '<div class="toolbar"><div style="flex:1"></div>' +
       '<button class="btn btn-primary" onclick="App.editAssignment()">+ สร้างรอบการประเมิน</button></div>';
     h += '<div class="card"><div class="card-body tight"><div class="table-wrap" id="as-table"></div></div></div>';
     host.innerHTML = h;
@@ -799,6 +850,7 @@ var App = (function () {
     }
     var h = '<table class="data"><thead><tr><th>ผู้รับการประเมิน</th><th>แบบประเมิน</th>' +
       '<th>รอบ</th><th>คณะกรรมการ</th><th class="num">ความคืบหน้า</th><th class="num">จัดการ</th></tr></thead><tbody>';
+    var staleIds = staleAssignments().map(function (a) { return a.id; });
     rows.forEach(function (a) {
       var p = personById(a.personId);
       var f = FORMS[a.formKey];
@@ -808,7 +860,9 @@ var App = (function () {
         var e = evaluatorById(id); return e ? e.name : '—';
       }).join(', ');
       h += '<tr><td>' + personCell(p) + '</td>' +
-        '<td>' + esc(f ? f.shortName : a.formKey) + '</td>' +
+        '<td>' + esc(f ? f.shortName : a.formKey) +
+        (staleIds.indexOf(a.id) >= 0
+          ? ' <span class="tag tag-warn">เลิกใช้กับตำแหน่งนี้แล้ว</span>' : '') + '</td>' +
         '<td>' + esc(roundRange(a.round, a.year).label + ' / ' + a.year) + '</td>' +
         '<td><span class="small">' + esc(names || '—') + '</span></td>' +
         '<td class="num">' + (r ? r.count : 0) + ' / ' + expected + '</td>' +
@@ -1926,6 +1980,7 @@ var App = (function () {
     editPerson: editPerson, deletePerson: deletePerson,
     editEvaluator: editEvaluator, deleteEvaluator: deleteEvaluator,
     editAssignment: editAssignment, deleteAssignment: deleteAssignment,
+    fixStaleAssignments: fixStaleAssignments,
     saveScore: saveScore, openFile: openFile, deleteFile: deleteFile, viewFiles: viewFiles,
     manageEvaluations: manageEvaluations, editEvaluation: editEvaluation,
     deleteEvaluation: deleteEvaluation, clearAllEvaluations: clearAllEvaluations
