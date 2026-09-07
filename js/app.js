@@ -851,10 +851,20 @@ var App = (function () {
     function refreshForms() {
       var p = personById(val('as-person'));
       var list = p ? formsForPosition(p.positionKey) : [];
+      /* รอบประเมินเก่าที่ใช้แบบซึ่งเลิกใช้กับตำแหน่งนั้นแล้ว (เช่น แบบเลื่อนเงินเดือนของครู)
+       * ต้องคงตัวเลือกเดิมไว้ ไม่งั้นกดบันทึกแล้วแบบจะถูกสลับเป็นแบบอื่น และคะแนนที่กรอกไว้จะใช้ไม่ได้
+       * คงไว้เฉพาะตอนที่ยังไม่เปลี่ยนตัวผู้รับการประเมิน */
+      var keep = null;
+      if (a.formKey && FORMS[a.formKey] && val('as-person') === a.personId) {
+        keep = FORMS[a.formKey];
+        for (var r = 0; r < list.length; r++) if (list[r].key === a.formKey) keep = null;
+        if (keep) list = list.concat([keep]);
+      }
       $('as-form').innerHTML = list.length
         ? list.map(function (f) {
             return '<option value="' + f.key + '"' + (f.key === a.formKey ? ' selected' : '') + '>' +
-              esc(f.shortName) + ' (เต็ม ' + f.totalMax + ' คะแนน)</option>';
+              esc(f.shortName) + ' (เต็ม ' + f.totalMax + ' คะแนน)' +
+              (keep && f.key === keep.key ? ' — แบบเดิมที่เลิกใช้แล้ว' : '') + '</option>';
           }).join('')
         : '<option value="">— ไม่มีแบบประเมินสำหรับตำแหน่งนี้ —</option>';
     }

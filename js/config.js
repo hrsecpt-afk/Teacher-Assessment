@@ -11,7 +11,7 @@
  * หมายเหตุด้านความปลอดภัย: ค่านี้อยู่ในไฟล์ที่เปิดดูได้จากเบราว์เซอร์
  * ผู้ที่ได้ลิงก์เว็บไปจึงเข้าถึงข้อมูลในสเปรดชีตได้ — เหมาะกับการใช้ภายในหน่วยงาน
  * ถ้าต้องเปลี่ยนเพราะ URL รั่ว ให้ Deploy Web app ใหม่แล้วแก้ค่าตรงนี้ */
-var DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbwDWdE1pSoJEyRjAztnjWG5zqhan3U5IHsIPGofUUewM0Yt9PPh3OUqd7Yyb8uK0s6f/exec';
+var DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbxLxo00Pt28GnEr_fBWDRb1dU6a6thTUrbsl7uin88A17A3dHv79is65gei_YbJVIuDAw/exec';
 var DEFAULT_GS_KEY = '';
 
 /* เวอร์ชันของหน้าเว็บ — แสดงมุมล่างของหน้าเข้าระบบ
@@ -21,7 +21,7 @@ var DEFAULT_GS_KEY = '';
  *   1) ค่านี้
  *   2) ไฟล์ version.json ที่รากโปรเจกต์
  * ระบบจะเทียบสองค่านี้ แล้วบังคับให้เบราว์เซอร์โหลดใหม่เองถ้าไม่ตรงกัน */
-var APP_VERSION = '2026-08-27 ค';
+var APP_VERSION = '2026-09-07 ก';
 
 var ORG = {
   name: 'ศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี',
@@ -33,7 +33,11 @@ var ORG = {
 };
 
 /* ตำแหน่งทั้งหมดในระบบ → ผูกกับ "แบบประเมิน" ที่ใช้ได้ (formKeys)
- * ตำแหน่งครูบางระดับใช้ได้ 2 แบบ (PA และเลื่อนเงินเดือน) จึงเก็บเป็น array */
+ *
+ * ตำแหน่ง ครู (ยังไม่มีวิทยฐานะ) และ ครู วิทยฐานะครูชำนาญการ
+ * ใช้ "แบบ PA เพียงแบบเดียว" — ไม่ใช้แบบเลื่อนเงินเดือนแล้ว
+ * (นิยามแบบเลื่อนเงินเดือนยังคงอยู่ใน forms.js เพื่อให้เปิดดู/พิมพ์ผลประเมินเก่าที่เคยบันทึกไว้ได้)
+ * ส่วนตำแหน่ง ครูผู้ช่วย ยังใช้แบบเลื่อนเงินเดือนตามเดิม */
 var POSITIONS = [
   {
     key: 'teacher_assistant',
@@ -45,13 +49,13 @@ var POSITIONS = [
     key: 'teacher_no_rank',
     label: 'ครู (ยังไม่มีวิทยฐานะ)',
     group: 'ข้าราชการครู',
-    formKeys: ['pa2_no_rank', 'salary_teacher_no_rank']
+    formKeys: ['pa2_no_rank']
   },
   {
     key: 'teacher_senior',
     label: 'ครู วิทยฐานะครูชำนาญการ',
     group: 'ข้าราชการครู',
-    formKeys: ['pa2_senior', 'salary_teacher_senior']
+    formKeys: ['pa2_senior']
   },
   {
     key: 'gov_employee',
