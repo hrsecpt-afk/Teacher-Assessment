@@ -86,6 +86,9 @@ var Print = (function () {
   /* ตารางให้คะแนนแบบ "ระดับ 1–4" หรือ "1–5" (ทำเครื่องหมาย ✓ ในช่องระดับ) */
   function levelTable(section, scores, opt) {
     opt = opt || {};
+    if (section && section.input === 'points') {
+      return pointsTable(section, scores, opt);
+    }
     var levels = section.input === 'level5' ? 5 : 4;
     var headers = opt.levelHeaders || null;
     var showPoints = opt.showPoints !== false;
@@ -156,20 +159,22 @@ var Print = (function () {
     return Math.min(n - 1, count - 1);
   }
 
-  /* ตารางกรอกคะแนนตรง (ครูอัตราจ้าง/ธุรการ/จ้างเหมา) */
+  /* ตารางกรอกคะแนนตรง (ครูอัตราจ้าง/ธุรการ/จ้างเหมา และ PA2 ส่วนที่ ๒) */
   function pointsTable(section, scores, opt) {
     opt = opt || {};
+    var remarkHeader = opt.remarkCol || 'ข้อเสนอแนะ / ความคิดเห็น';
     var h = '<table class="form"><thead><tr>';
     h += '<th>รายการประเมิน</th><th style="width:56px">คะแนน<br>เต็ม</th>';
     if (opt.selfCol) h += '<th style="width:60px">คะแนน<br>ประเมินตนเอง</th>';
     h += '<th style="width:62px">คะแนน<br>ที่ได้</th>';
-    h += '<th style="width:150px">ข้อเสนอแนะ / ความคิดเห็น</th>';
+    h += '<th style="width:110px">' + esc(remarkHeader) + '</th>';
     h += '</tr></thead><tbody>';
 
     var groupTitles = section.groupsBy || null;
     var lastGroup = -1;
     var cols = 3 + (opt.selfCol ? 1 : 0) + 1;
 
+    var hasAny = false;
     for (var i = 0; i < section.items.length; i++) {
       var it = section.items[i];
       if (groupTitles) {
@@ -180,8 +185,10 @@ var Print = (function () {
         }
       }
       var v = scores[scoreKey(section.id, i)];
+      if (v !== undefined && v !== '' && v !== null) hasAny = true;
       h += '<tr>';
-      h += '<td>' + (it.no ? '<b>' + esc(it.no) + '</b> ' : '') + esc(it.text) + '</td>';
+      h += '<td>' + (it.no ? '<b>' + esc(it.no) + '</b> ' : '') + esc(it.text) +
+        (it.detail ? '<span class="idesc">◆ ' + esc(it.detail) + '</span>' : '') + '</td>';
       h += '<td class="num">' + it.max + '</td>';
       if (opt.selfCol) h += '<td class="num"></td>';
       h += '<td class="num">' + (v === undefined || v === '' ? '' : n2(itemPoints(section, it, v))) + '</td>';
@@ -189,9 +196,9 @@ var Print = (function () {
       h += '</tr>';
     }
     var raw = sectionRaw(section, scores);
-    h += '<tr class="total"><td class="r">รวมคะแนน</td><td class="num">' + section.maxScore + '</td>';
+    h += '<tr class="total"><td class="r">รวมคะแนน' + (section.no ? ' ' + esc(section.no) : '') + '</td><td class="num">' + section.maxScore + '</td>';
     if (opt.selfCol) h += '<td class="num"></td>';
-    h += '<td class="num">' + n2(raw) + '</td><td></td></tr>';
+    h += '<td class="num">' + (hasAny ? n2(raw) : '') + '</td><td></td></tr>';
     h += '</tbody></table>';
     return h;
   }

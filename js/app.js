@@ -1191,7 +1191,7 @@ var App = (function () {
 
     if (section.input === 'points') {
       h += '<td class="pts"><input type="number" class="pts-input" min="0" max="' + item.max +
-        '" step="0.5" data-skey="' + key + '" value="' + (cur === undefined ? '' : esc(cur)) + '">' +
+        '" step="any" placeholder="0" data-skey="' + key + '" value="' + (cur === undefined ? '' : esc(cur)) + '">' +
         '<span class="pts-max">/ ' + item.max + '</span></td>';
     } else {
       h += '<td class="opts"><span class="lv">';
