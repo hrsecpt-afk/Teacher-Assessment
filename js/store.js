@@ -105,7 +105,7 @@ var Store = (function () {
   /* ต้องเป็น URL เต็มของ Apps Script เท่านั้น — ที่อยู่แบบสัมพัทธ์จะถูกต่อกับโดเมนของเว็บ
      แล้วได้ 404 โดยไม่มีอะไรบอกว่าผิดตรงไหน */
   function isValidGsUrl(u) {
-    return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec\/?$/.test(String(u || '').trim());
+    return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec\/?$/.test(String(u || '').trim().replace(/\s+/g, ''));
   }
 
   function gsConfigured() { return isValidGsUrl(db.settings.gsUrl); }

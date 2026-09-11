@@ -1841,7 +1841,8 @@ var App = (function () {
     }
 
     $('st-gs-connect').onclick = function () {
-      var url = val('st-gsurl');
+      var url = String(val('st-gsurl') || '').trim().replace(/\s+/g, '');
+      $('st-gsurl').value = url;
 
       /* URL ที่ได้จากแถบที่อยู่หลังเบราว์เซอร์เด้งไปแล้ว ใช้ไม่ได้ —
          มันมีคีย์ชั่วคราวที่หมดอายุ ต้องใช้ /exec ต้นทางเท่านั้น */
