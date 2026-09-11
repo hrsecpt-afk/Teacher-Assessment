@@ -130,8 +130,19 @@ var Store = (function () {
       try {
         j = JSON.parse(text);
       } catch (e) {
-        /* มักเกิดจากยังไม่ได้ตั้ง Who has access = Anyone แล้วโดนเด้งไปหน้า login */
-        throw new Error('เซิร์ฟเวอร์ไม่ได้ตอบเป็น JSON — ตรวจว่า Deploy แบบ "Anyone" แล้วหรือยัง');
+        var match = text.match(/<div[^>]*style="[^"]*monospace[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                    text.match(/<body[^>]*>([\s\S]*?)<\/body>/i) ||
+                    text.match(/<title>([\s\S]*?)<\/title>/i);
+        var cleanMsg = match ? match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+        if (cleanMsg && (cleanMsg.indexOf('doPost') !== -1 || cleanMsg.indexOf('ไม่พบฟังก์ชัน') !== -1 || cleanMsg.indexOf('Script function not found') !== -1)) {
+          throw new Error('Google Apps Script แจ้งว่า: "' + cleanMsg + '" — ยังไม่ได้ Deploy เวอร์ชันใหม่ หรือยังไม่ได้บันทึกไฟล์ Code.gs');
+        }
+        if (text.indexOf('accounts.google.com') !== -1 || text.indexOf('ServiceLogin') !== -1 ||
+            text.indexOf('ไม่สามารถเปิดไฟล์ได้ในเวลานี้') !== -1 || text.indexOf('unable to open the file') !== -1 ||
+            text.indexOf('docs-drivelogo') !== -1) {
+          throw new Error('Google ไม่อนุญาตให้เข้าถึง (ติดสิทธิ์/หน้าล็อกอิน) — ใน Apps Script ต้องตั้งค่า Who has access (ผู้มีสิทธิ์เข้าถึง) เป็น "Anyone" (ทุกคน) และ Execute as เป็น "Me" (ฉัน)');
+        }
+        throw new Error('เซิร์ฟเวอร์ไม่ได้ตอบเป็น JSON' + (cleanMsg ? ' (' + cleanMsg + ')' : '') + ' — ตรวจว่า Deploy แบบ "Anyone" และเลือก Version "New version" แล้วหรือยัง');
       }
       if (!j.ok) throw new Error(j.error || 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์');
       return j;

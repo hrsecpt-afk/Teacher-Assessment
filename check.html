@@ -155,10 +155,38 @@ function step3() {
       var sec = ((Date.now() - t0) / 1000).toFixed(1);
       var j;
       try { j = JSON.parse(txt); } catch (e) {
+        var match = txt.match(/<div[^>]*style="[^"]*monospace[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                    txt.match(/<title>([\s\S]*?)<\/title>/i);
+        var cleanMsg = match ? match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
         results[idx] = { name: 'เชื่อมต่อ Google (อ่านข้อมูล)', state: 'bad',
-          detail: 'ตอบกลับผิดรูปแบบ (' + sec + ' วิ): ' + txt.slice(0, 100) };
+          detail: 'เซิร์ฟเวอร์แจ้ง (' + sec + ' วิ): ' + (cleanMsg || 'ตอบกลับผิดรูปแบบ: ' + txt.slice(0, 100)) };
         render();
-        verdict('bad', '<b>Google ตอบกลับผิดปกติ</b><br>อาจต้อง Deploy Web app ใหม่ แจ้งผู้ดูแลระบบ');
+        if (cleanMsg.indexOf('doPost') !== -1 || cleanMsg.indexOf('ไม่พบฟังก์ชัน') !== -1 || cleanMsg.indexOf('Script function not found') !== -1) {
+          verdict('bad', '<b>ไม่พบฟังก์ชัน doPost ใน Google Apps Script</b><br>' +
+            'สาเหตุ: ใน Apps Script ยังไม่ได้วางโค้ดจาก <code>google_apps_script/Code.gs</code> หรือยังไม่ได้กด <b>Deploy เวอร์ชันใหม่</b><br>' +
+            'วิธีแก้:<br>' +
+            '1. เปิดโปรเจกต์ที่ <a href="https://script.google.com" target="_blank">script.google.com</a> ตรวจว่าวางโค้ดใน <code>Code.gs</code> ครบถ้วนแล้วกดบันทึก (Ctrl+S)<br>' +
+            '2. กดปุ่มสีน้ำเงิน <b>Deploy (การปรับใช้)</b> → <b>Manage deployments (จัดการการปรับใช้)</b><br>' +
+            '3. กดรูปดินสอ ✏️ (แก้ไข) ที่รายการ Web app<br>' +
+            '4. ตรงช่อง <b>Version (เวอร์ชัน)</b> ให้เลือก <b>New version (เวอร์ชันใหม่)</b><br>' +
+            '5. กด <b>Deploy (ปรับใช้)</b> แล้วกลับมาหน้านี้กด “ตรวจใหม่อีกครั้ง”');
+        } else if (txt.indexOf('accounts.google.com') !== -1 || txt.indexOf('ServiceLogin') !== -1 ||
+                   txt.indexOf('ไม่สามารถเปิดไฟล์ได้ในเวลานี้') !== -1 || txt.indexOf('unable to open the file') !== -1 ||
+                   txt.indexOf('docs-drivelogo') !== -1) {
+          verdict('bad', '<b>Google ปิดกั้นการเชื่อมต่อ (ติดสิทธิ์การเข้าถึง / บังคับล็อกอิน)</b><br>' +
+            'สาเหตุ: ตอน Deploy ตั้งค่า <b>Who has access (ผู้มีสิทธิ์เข้าถึง)</b> ไม่ได้เป็น <b>Anyone (ทุกคน)</b> หรือ Execute as ไม่ได้เป็น Me<br><br>' +
+            '<b>วิธีแก้ไข:</b><br>' +
+            '1. เปิด <a href="https://script.google.com" target="_blank">script.google.com</a> ➔ กด <b>Deploy (การปรับใช้)</b> ➔ <b>Manage deployments (จัดการการปรับใช้)</b><br>' +
+            '2. กดรูปดินสอ ✏️ (แก้ไข)<br>' +
+            '3. ตรวจสอบ 2 ช่องนี้:<br>' +
+            '&nbsp;&nbsp;&bull; <b>Execute as (ผู้ดำเนินการ):</b> ต้องเป็น <code>Me (ฉัน)</code><br>' +
+            '&nbsp;&nbsp;&bull; <b>Who has access (ผู้มีสิทธิ์เข้าถึง):</b> ต้องเป็น <code>Anyone (ทุกคน)</code><br>' +
+            '&nbsp;&nbsp;&bull; <b>Version (เวอร์ชัน):</b> เลือก <code>New version (เวอร์ชันใหม่)</code><br>' +
+            '4. กด <b>Deploy (ปรับใช้)</b><br><br>' +
+            '⚠️ <i>หมายเหตุ: หากช่อง Who has access ไม่มีตัวเลือก “Anyone” (มีแค่เฉพาะคนในองค์กร) แปลว่าใช้อีเมลโรงเรียน/องค์กรที่ติดนโยบายล็อกสิทธิ์ ให้สร้างโปรเจกต์ด้วย <b>Gmail ส่วนตัว (@gmail.com)</b> แทนครับ</i>');
+        } else {
+          verdict('bad', '<b>Google ตอบกลับผิดปกติ</b> (' + (cleanMsg || 'ไม่ใช่ JSON') + ')<br>อาจต้อง Deploy Web app ใหม่ แจ้งผู้ดูแลระบบ');
+        }
         return;
       }
       if (!j.ok) {

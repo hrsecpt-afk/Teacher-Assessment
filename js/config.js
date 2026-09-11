@@ -11,7 +11,7 @@
  * หมายเหตุด้านความปลอดภัย: ค่านี้อยู่ในไฟล์ที่เปิดดูได้จากเบราว์เซอร์
  * ผู้ที่ได้ลิงก์เว็บไปจึงเข้าถึงข้อมูลในสเปรดชีตได้ — เหมาะกับการใช้ภายในหน่วยงาน
  * ถ้าต้องเปลี่ยนเพราะ URL รั่ว ให้ Deploy Web app ใหม่แล้วแก้ค่าตรงนี้ */
-var DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbxLxo00Pt28GnEr_fBWDRb1dU6a6thTUrbsl7uin88A17A3dHv79is65gei_YbJVIuDAw/exec';
+var DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzrrnxNX2YxAMCJ9pWhfF51INXY3V21MwInnl-ATXb2q5EEDDzgCM6J6NRS-_eRKWLK/exec';
 var DEFAULT_GS_KEY = '';
 
 /* เวอร์ชันของหน้าเว็บ — แสดงมุมล่างของหน้าเข้าระบบ
@@ -21,7 +21,7 @@ var DEFAULT_GS_KEY = '';
  *   1) ค่านี้
  *   2) ไฟล์ version.json ที่รากโปรเจกต์
  * ระบบจะเทียบสองค่านี้ แล้วบังคับให้เบราว์เซอร์โหลดใหม่เองถ้าไม่ตรงกัน */
-var APP_VERSION = '2026-09-11';
+var APP_VERSION = '2026-09-11 ข';
 
 var ORG = {
   name: 'ศูนย์การศึกษาพิเศษ ประจำจังหวัดปทุมธานี',
