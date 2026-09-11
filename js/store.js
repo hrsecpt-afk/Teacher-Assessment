@@ -65,11 +65,16 @@ var Store = (function () {
          ถ้าว่าง หรือเคยบันทึกค่าที่ไม่สมบูรณ์ไว้ (เช่นคัดลอกมาไม่ครบจนขาด https://
          ซึ่งเบราว์เซอร์จะตีความเป็นที่อยู่ภายในเว็บแล้วได้ 404)
          ให้ทิ้งค่านั้นแล้วกลับไปใช้ค่าที่ฝังมากับระบบ */
-      if (!isValidGsUrl(db.settings.gsUrl)) {
+      var OLD_BROKEN_URLS = [
+        'https://script.google.com/macros/s/AKfycbxLxo00Pt28GnEr_fBWDRb1dU6a6thTUrbsl7uin88A17A3dHv79is65gei_YbJVIuDAw/exec',
+        'https://script.google.com/macros/s/AKfycbwDWdE1pSoJEyRjAztnjWG5zqhan3U5IHsIPGofUUewM0Yt9PPh3OUqd7Yyb8uK0s6f/exec'
+      ];
+      if (!isValidGsUrl(db.settings.gsUrl) || OLD_BROKEN_URLS.indexOf(db.settings.gsUrl) !== -1) {
         if (db.settings.gsUrl) {
-          console.warn('ที่อยู่ Web app ที่บันทึกไว้ไม่ถูกต้อง จึงเปลี่ยนกลับเป็นค่าเริ่มต้น:', db.settings.gsUrl);
+          console.warn('ที่อยู่ Web app ที่บันทึกไว้ไม่ถูกต้องหรือเป็น URL เก่า จึงเปลี่ยนกลับเป็นค่าเริ่มต้น:', db.settings.gsUrl);
         }
         db.settings.gsUrl = DEFAULT_GS_URL;
+        saveLocal();
       }
       for (var i = 0; i < TABLES.length; i++) db[TABLES[i]] = parsed[TABLES[i]] || [];
       return true;

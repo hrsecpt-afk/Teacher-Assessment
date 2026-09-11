@@ -1779,7 +1779,11 @@ var App = (function () {
       '<b>google_apps_script/Code.gs</b> → Deploy เป็น <b>Web app</b> ' +
       '(Execute as: <b>Me</b>, Who has access: <b>Anyone</b>) → คัดลอก URL ที่ลงท้ายด้วย <b>/exec</b> มาวางด้านล่าง</div>' +
       field('st-gsurl', 'Web app URL (ลงท้ายด้วย /exec)',
-        '<input type="text" id="st-gsurl" value="' + esc(s.gsUrl || '') + '" placeholder="https://script.google.com/macros/s/.../exec">') +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+        '<input type="text" id="st-gsurl" value="' + esc(s.gsUrl || '') + '" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1">' +
+        '<button type="button" class="btn" id="st-gs-reset-url" style="white-space:nowrap">ใช้ค่าเริ่มต้น</button>' +
+        '</div>' +
+        '<div class="help" style="margin-top:6px;font-size:12px;color:#5b6779">URL ปัจจุบันของระบบ: <code>' + esc(DEFAULT_GS_URL) + '</code></div>') +
       field('st-gskey', 'รหัสลับ API (ไม่บังคับ)',
         '<input type="text" id="st-gskey" value="' + esc(s.gsKey || '') + '">',
         'ถ้าตั้ง Script Property ชื่อ API_KEY ไว้ใน Apps Script ให้กรอกค่าเดียวกันที่นี่') +
@@ -1828,6 +1832,13 @@ var App = (function () {
       toast('บันทึกบัญชีผู้ดูแลแล้ว', 'ok');
     };
     function gsStatus(html) { $('st-gsstatus').innerHTML = html; }
+
+    if ($('st-gs-reset-url')) {
+      $('st-gs-reset-url').onclick = function () {
+        $('st-gsurl').value = DEFAULT_GS_URL;
+        toast('เปลี่ยนเป็น URL ค่าเริ่มต้นแล้ว กรุณากดบันทึกและทดสอบการเชื่อมต่อ', 'ok');
+      };
+    }
 
     $('st-gs-connect').onclick = function () {
       var url = val('st-gsurl');
