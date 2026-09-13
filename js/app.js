@@ -263,6 +263,7 @@ var App = (function () {
   function peopleOptions(q) {
     var rows = Store.all('people');
     var html = '', count = 0;
+    var seen = {};
     /* จัดกลุ่มตามตำแหน่ง เรียงตามลำดับใน POSITIONS */
     for (var i = 0; i < POSITIONS.length; i++) {
       var pos = POSITIONS[i];
@@ -272,12 +273,28 @@ var App = (function () {
       });
       var inner = '';
       for (var j = 0; j < group.length; j++) {
+        seen[group[j].id] = true;
         var nm = Store.personFullName(group[j]);
         if (!optionMatch(nm, q)) continue;
         inner += '<option value="' + esc(group[j].id) + '">' + esc(nm) + '</option>';
         count++;
       }
       if (inner) html += '<optgroup label="' + esc(pos.label) + '">' + inner + '</optgroup>';
+    }
+    /* เผื่อมีบุคคลที่มีตำแหน่งอื่น หรือกรณี config ยังไม่โหลด */
+    var leftovers = rows.filter(function (p) { return !seen[p.id]; });
+    if (leftovers.length) {
+      leftovers.sort(function (a, b) {
+        return (a.firstName || '').localeCompare(b.firstName || '', 'th');
+      });
+      var otherInner = '';
+      for (var k = 0; k < leftovers.length; k++) {
+        var otherNm = Store.personFullName(leftovers[k]);
+        if (!optionMatch(otherNm, q)) continue;
+        otherInner += '<option value="' + esc(leftovers[k].id) + '">' + esc(otherNm) + '</option>';
+        count++;
+      }
+      if (otherInner) html += '<optgroup label="ตำแหน่งอื่น ๆ / ผู้บริหาร">' + otherInner + '</optgroup>';
     }
     return { html: html, count: count };
   }
@@ -1969,10 +1986,17 @@ var App = (function () {
     checkForUpdate();
     bindLogin();
     Store.onChange(updateSyncBadge);
-    /* ถ้ารายชื่อเพิ่งมาถึงจาก Google Sheets ตอนที่หน้าเข้าระบบยังว่างอยู่ ให้วาดใหม่
-       (ไม่วาดทับตอนที่มีรายการอยู่แล้ว เพราะจะลบรหัสผ่านที่พิมพ์ไว้) */
+    /* เมื่อมีข้อมูลอัปเดตจาก Google Sheets ให้รีเฟรชรายการชื่อโดยรักษาค่าที่กรอกไว้ */
     Store.onChange(function () {
-      if (loginVisible() && loginRole !== 'admin' && !$('login-who')) renderLoginForm();
+      if (loginVisible() && loginRole !== 'admin') {
+        var keepId = $('login-who') ? $('login-who').value : '';
+        var keepPass = $('login-pass') ? $('login-pass').value : '';
+        renderLoginForm();
+        if (keepId && $('login-who')) $('login-who').value = keepId;
+        if (keepPass && $('login-pass')) $('login-pass').value = keepPass;
+      } else if (session && route.page === 'people' && $('people-table')) {
+        drawPeople();
+      }
     });
     Store.init().then(function () {
       Store.seedIfEmpty();
