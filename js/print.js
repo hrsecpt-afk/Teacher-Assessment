@@ -288,9 +288,9 @@ var Print = (function () {
     out += '<div class="info-line">๑) ภาระงาน &nbsp;&nbsp;' +
       box(ev.workloadPass !== false, 'เป็นไปตามที่ ก.ค.ศ. กำหนด') + '&nbsp;&nbsp;&nbsp;' +
       box(ev.workloadPass === false, 'ไม่เป็นไปตามที่ ก.ค.ศ. กำหนด') + '</div>';
-    out += '<div class="info-line">๒) การปฏิบัติงานและผลการปฏิบัติงานตามมาตรฐานตำแหน่งครู</div>';
+    out += '<div class="info-line">๒) การปฏิบัติงานและผลการปฏิบัติงานตาม' + esc(f.standardTitle || 'มาตรฐานตำแหน่งครู') + '</div>';
     out += '<div class="small">ระดับการปฏิบัติที่คาดหวัง: <b>' +
-      esc(s1.subtitle.replace('๓ ด้าน ๑๕ ตัวชี้วัด — ระดับการปฏิบัติที่คาดหวัง: ', '')) + '</b></div>';
+      esc(s1.expectedLevel || s1.subtitle.replace(/^[^\—]+—\s*ระดับการปฏิบัติที่คาดหวัง:\s*/, '')) + '</b></div>';
 
     out += levelTable(s1, sc, {
       levelHeaders: ['๑', '๒', '๓', '๔'],
@@ -302,7 +302,7 @@ var Print = (function () {
     out += '</div>'; /* end sheet 1 */
 
     out += '<div class="sheet">';
-    out += '<div class="sec-title boxed">ส่วนที่ ๒ ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน (๔๐ คะแนน)</div>';
+    out += '<div class="sec-title boxed">' + esc(s2.no) + ' ' + esc(s2.title) + ' (๔๐ คะแนน)</div>';
     out += levelTable(s2, sc, { levelHeaders: ['๑', '๒', '๓', '๔'], remarkCol: 'หมายเหตุ' });
 
     out += '<div class="center bold mt14" style="font-size:14px">รวมผลการประเมินทั้ง ๒ ส่วน = ' +
